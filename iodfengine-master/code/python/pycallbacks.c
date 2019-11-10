@@ -20,17 +20,15 @@ void Py_CL_InitCGame(void) {
         CALLBACK_MODULE = PyImport_Import(Name);
         
         PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_INITCGAME_FUNCTION);
-        PyObject *Args = PyTuple_New(0);
-        PyObject_CallObject(Func, Args);
+        PyObject_CallObject(Func, NULL);
 
         Py_DECREF(Name);
         Py_DECREF(Func);
-        Py_DECREF(Args);
     }
 }
 
 void Py_CL_CreateCmd(usercmd_t *cmd) {
-    // Pass usercmd_t struct values to the python callback function in a list
+    // Pass usercmd_t struct values to the python callback function
     PyObject *Args = PyTuple_New(9);
     PyTuple_SetItem(Args, 0, PyLong_FromLong(cmd->serverTime));
     PyTuple_SetItem(Args, 1, PyLong_FromLong(cmd->angles[0]));
@@ -45,7 +43,17 @@ void Py_CL_CreateCmd(usercmd_t *cmd) {
     PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_CREATECMD_FUNCTION);
 
     PyObject *Value = PyObject_CallObject(Func, Args);
-    
+
+    // Replace values in the usercmt_t struct with the returned values
+    PyArg_ParseTuple(Value, "iiiiiiiii", &(cmd->serverTime),
+                                         &(cmd->angles[0]),
+                                         &(cmd->angles[1]),
+                                         &(cmd->angles[2]),
+                                         &(cmd->buttons),
+                                         &(cmd->weapon),
+                                         &(cmd->forwardmove),
+                                         &(cmd->rightmove),
+                                         &(cmd->upmove));
     Py_DECREF(Args);
     Py_DECREF(Func);
     Py_DECREF(Value);
