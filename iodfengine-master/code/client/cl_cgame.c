@@ -23,6 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "client.h"
 
+#include "../python/pycallbacks.h"
+
 #include "../botlib/botlib.h"
 
 #ifdef USE_MUMBLE
@@ -767,6 +769,9 @@ void CL_InitCGame( void ) {
 
 	// clear anything that got printed
 	Con_ClearNotify ();
+
+	// Initialize the embedded Python interpreter
+	Py_Embed_Initialize();
 }
 
 

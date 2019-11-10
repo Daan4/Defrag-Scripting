@@ -248,6 +248,7 @@ SDLDIR=$(MOUNT_DIR)/sdl
 ASMDIR=$(MOUNT_DIR)/asm
 SYSDIR=$(MOUNT_DIR)/sys
 GDIR=$(MOUNT_DIR)/game
+PYDIR=$(MOUNT_DIR)/python
 CGDIR=$(MOUNT_DIR)/cgame
 BLIBDIR=$(MOUNT_DIR)/botlib
 NDIR=$(MOUNT_DIR)/null
@@ -1267,7 +1268,6 @@ endif
 # Create the build directories, check libraries and print out
 # an informational message, then start building
 targets: makedirs
-	$(MAKE) pythoncopy
 	@echo ""
 	@echo "Building in $(B):"
 	@echo "  PLATFORM: $(PLATFORM)"
@@ -1631,7 +1631,9 @@ Q3OBJ = \
   $(B)/client/sdl_snd.o \
   \
   $(B)/client/con_log.o \
-  $(B)/client/sys_main.o
+  $(B)/client/sys_main.o \
+  \
+  $(B)/client/pycallbacks.o
 
 ifdef MINGW
   Q3OBJ += \
@@ -2522,6 +2524,9 @@ $(B)/client/%.o: $(ASMDIR)/%.c
 $(B)/client/%.o: $(CDIR)/%.c
 	$(DO_CC)
 
+$(B)/client/%.o: $(PYDIR)/%.c
+	$(DO_CC)
+
 $(B)/client/%.o: $(SDIR)/%.c
 	$(DO_CC)
 
@@ -2842,7 +2847,7 @@ endif
 
 .PHONY: all clean clean2 clean-debug clean-release copyfiles \
 	debug default dist distclean installer makedirs \
-	release targets pythoncopy\
+	release targets \
 	toolsclean toolsclean2 toolsclean-debug toolsclean-release \
 	$(OBJ_D_FILES) $(TOOLSOBJ_D_FILES)
 
@@ -2850,6 +2855,3 @@ endif
 ifneq ($(findstring clean, $(MAKECMDGOALS)),)
 .NOTPARALLEL:
 endif
-
-pythoncopy:
-	rsync -rup --delete ../python/ $(B)/python/
