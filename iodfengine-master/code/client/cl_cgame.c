@@ -771,7 +771,7 @@ void CL_InitCGame( void ) {
 	Con_ClearNotify ();
 
 	// Initialize the embedded Python interpreter
-	Py_Embed_Initialize();
+	Py_CL_InitCGame();
 }
 
 

@@ -3,29 +3,50 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+// Python file and function names
+const char *CALLBACKS_FILENAME = "callbacks";
+const char *CL_INITCGAME_FUNCTION = "CL_InitCGame";
+const char *CL_CREATECMD_FUNCTION = "CL_CreateCmd";
+
 int initialized = 0;
+PyObject *CALLBACK_MODULE;
 
-PyObject *pCALLBACK_MODULE;
-
-void Py_Embed_Initialize(void) {
+void Py_CL_InitCGame(void) {
     if(!initialized) {
         initialized = 1;
         Py_Initialize();
         
-        PyObject *pName;
-        pName = PyUnicode_DecodeFSDefault("callbacks");
-        pCALLBACK_MODULE = PyImport_Import(pName);
-        Py_DECREF(pName);
+        PyObject *Name = PyUnicode_DecodeFSDefault(CALLBACKS_FILENAME);
+        CALLBACK_MODULE = PyImport_Import(Name);
+        
+        PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_INITCGAME_FUNCTION);
+        PyObject *Args = PyTuple_New(0);
+        PyObject_CallObject(Func, Args);
+
+        Py_DECREF(Name);
+        Py_DECREF(Func);
+        Py_DECREF(Args);
     }
 }
 
 void Py_CL_CreateCmd(usercmd_t *cmd) {
-    PyObject *pFunc, *pArgs, *pValue;
+    // Pass usercmd_t struct values to the python callback function in a list
+    PyObject *Args = PyTuple_New(9);
+    PyTuple_SetItem(Args, 0, PyLong_FromLong(cmd->serverTime));
+    PyTuple_SetItem(Args, 1, PyLong_FromLong(cmd->angles[0]));
+    PyTuple_SetItem(Args, 2, PyLong_FromLong(cmd->angles[1]));
+    PyTuple_SetItem(Args, 3, PyLong_FromLong(cmd->angles[2]));
+    PyTuple_SetItem(Args, 4, PyLong_FromLong(cmd->buttons));
+    PyTuple_SetItem(Args, 5, PyLong_FromLong(cmd->weapon));
+    PyTuple_SetItem(Args, 6, PyLong_FromLong(cmd->forwardmove));
+    PyTuple_SetItem(Args, 7, PyLong_FromLong(cmd->rightmove));
+    PyTuple_SetItem(Args, 8, PyLong_FromLong(cmd->upmove));
 
-    pFunc = PyObject_GetAttrString(pCALLBACK_MODULE, "callback");
-    pArgs = PyTuple_New(0);
-    pValue = PyObject_CallObject(pFunc, pArgs);
-    Py_XDECREF(pArgs);
-    Py_XDECREF(pValue);
-    Py_XDECREF(pFunc);
+    PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_CREATECMD_FUNCTION);
+
+    PyObject *Value = PyObject_CallObject(Func, Args);
+    
+    Py_DECREF(Args);
+    Py_DECREF(Func);
+    Py_DECREF(Value);
 }
