@@ -1,0 +1,15 @@
+demo list in ui is empty (playing and recording demoes works tho) seems like this iodfengine version is just crap
+
+rewrite makefile to copy entire python folder to build folder instead of hardcoding each file
+
+add custom cvar to exec scripts /execscript or smt
+
+idea: ultimate hodor bot
+
+automate load / deployment / launch engine
+
+figure out how to do hotswapping python code without restarting engine
+
+better debugging tools for python code
+
+record inputs from demoes for playback

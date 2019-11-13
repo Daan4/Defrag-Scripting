@@ -14,7 +14,7 @@ class DemoRecorderScript:
     pass
 
 
-class LiverecorderScript:
+class LiveRecorderScript:
     def __init__(self, filename):
         self.csv_writer = csv.writer(open(filename, "w", newline=''))
 
