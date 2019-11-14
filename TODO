@@ -17,3 +17,5 @@ if it fails to randomly compile -> probably wrong file endings
 fix makefile:
     sdl264.dll does not get copied automatically anymore?
     sync entire python folder automatically to a subfolder like /build/python
+
+build basescript class which logs any exceptions in run method to error.log

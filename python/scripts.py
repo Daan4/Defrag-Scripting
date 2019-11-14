@@ -1,6 +1,7 @@
 from constants import *
 import csv
 import logging
+import functools
 
 
 # Return a list of scripts to run
@@ -11,33 +12,46 @@ def init_scripts():
     return [x]
 
 
-class DemoRecorderScript:
+def log_exceptions(func):
+    @functools.wraps(func)
+    def inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            logging.exception(f"Exception in {func.__name__}")
+    return inner
+
+
+class BaseScript:
+    @log_exceptions
+    def run(self, callback, *args):
+        x = getattr(self, callback)(*args)
+        return x
+
+    def CL_CreateCmd(self, cmd):
+        return cmd
+
+
+class DemoRecorderScript(BaseScript):
     pass
 
 
-class UsercmdRecorderScript:
+class UsercmdRecorderScript(BaseScript):
     def __init__(self, filename):
         self.csv_writer = csv.writer(open(filename, "w", newline=''))
 
-    def run(self, callback_name, *args):
-        if callback_name == "CL_CreateCmd":
-            return self.write(*args)
-
-    def write(self, cmd):
+    def CL_CreateCmd(self, cmd):
         self.csv_writer.writerow(tuple(cmd))
         return cmd
 
 
-class UsercmdReplayScript:
+class UsercmdReplayScript(BaseScript):
     def __init__(self, filename):
         self.csv_reader = csv.reader(open(filename, "r"))
 
-    def run(self, callback_name, *args):
-        if callback_name == "CL_CreateCmd":
-            return self.read(*args)
-
-    def read(self, cmd):
+    def CL_CreateCmd(self, cmd):
         # keep reading from csv file until we reached the end, then pass user input again
+        # returns a tuple instead of usercmd_t class but this doesn't really matter atm
         if self.csv_reader is not None:
             try:
                 row = list(map(int, next(self.csv_reader)))
