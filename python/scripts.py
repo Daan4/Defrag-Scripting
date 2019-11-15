@@ -2,6 +2,7 @@ from constants import *
 import csv
 import logging
 import functools
+from structs import usercmd_t
 
 
 # Return a list of scripts to run
@@ -55,7 +56,9 @@ class UsercmdReplayScript(BaseScript):
         if self.csv_reader is not None:
             try:
                 row = list(map(int, next(self.csv_reader)))
-                return tuple([cmd.server_time] + row[1:])
+                new_cmd = usercmd_t(*row)
+                new_cmd.server_time = cmd.server_time
+                return new_cmd
             except StopIteration:
                 self.csv_reader = None
-        return tuple([cmd.server_time] + list(cmd))
+        return cmd
