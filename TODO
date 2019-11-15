@@ -16,3 +16,4 @@ list of potentially useful funcs to wrap:
     com_printf prints to console
 
 add return values to startscript and stopscript to echo some feedback in the console
+-> also use this to catch and inform user of wrong args / script names

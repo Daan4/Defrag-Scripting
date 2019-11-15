@@ -12,8 +12,12 @@ DEBUG_LOG_FILENAME = "logs/output.log"
 script_instances = []
 
 
-# Called only once
+# unused atm but might as well leave it in
 def CL_InitCGame():
+    pass
+
+
+def CL_Init():
     os.makedirs(os.path.dirname(DEBUG_LOG_FILENAME), exist_ok=True)
     logging.basicConfig(filename=DEBUG_LOG_FILENAME, filemode='w', format='%(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 
@@ -41,6 +45,11 @@ def CL_StopScript(script_class_name):
     logging.debug(f"Stopping script \"{script_class_name}\"")
     for script in script_instances:
         script.run(CL_StopScript.__name__, script_class_name)
+
+
+def CL_ParseSnapshot(*args):
+    logging.debug("test")
+    logging.debug(*args)
 
 
 if __name__ == "__main__":

@@ -3767,6 +3767,8 @@ void CL_Init( void ) {
 	Cvar_Get( "cl_guid", "", CVAR_USERINFO | CVAR_ROM );
 	CL_UpdateGUID( NULL, 0 );
 
+	Py_CL_Init();
+
 	Com_Printf( "----- Client Initialization Complete -----\n" );
 }
 

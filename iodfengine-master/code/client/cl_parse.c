@@ -23,6 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "client.h"
 
+#include "../python/pycallbacks.h"
+
 char *svc_strings[256] = {
 	"svc_bad",
 
@@ -320,6 +322,8 @@ void CL_ParseSnapshot( msg_t *msg ) {
 		Com_Printf( "   snapshot:%i  delta:%i  ping:%i\n", cl.snap.messageNum,
 		cl.snap.deltaNum, cl.snap.ping );
 	}
+
+	Py_CL_ParseSnapshot(&cl);
 
 	cl.newSnapshots = qtrue;
 }

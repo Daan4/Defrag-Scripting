@@ -6,27 +6,32 @@
 // Python file and function names
 const char *CALLBACKS_FILENAME = "callbacks";
 const char *CL_INITCGAME_FUNCTION = "CL_InitCGame";
+const char *CL_INIT_FUNCTION = "CL_Init";
 const char *CL_CREATECMD_FUNCTION = "CL_CreateCmd";
 const char *CL_STARTSCRIPT_FUNCTION = "CL_StartScript";
 const char *CL_STOPSCRIPT_FUNCTION = "CL_StopScript";
+const char *CL_PARSESNAPSHOT_FUNCTION = "CL_ParseSnapshot";
 
-int initialized = 0;
 PyObject *CALLBACK_MODULE;
 
 void Py_CL_InitCGame(void) {
-    if(!initialized) {
-        initialized = 1;
-        Py_Initialize();
-        
-        PyObject *Name = PyUnicode_DecodeFSDefault(CALLBACKS_FILENAME);
-        CALLBACK_MODULE = PyImport_Import(Name);
-        
-        PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_INITCGAME_FUNCTION);
-        PyObject_CallObject(Func, NULL);
+    PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_INITCGAME_FUNCTION);
+    PyObject_CallObject(Func, NULL);
 
-        Py_DECREF(Name);
-        Py_DECREF(Func);
-    }
+    Py_DECREF(Func);
+}
+
+void Py_CL_Init(void) {
+    Py_Initialize();
+
+    PyObject *Name = PyUnicode_DecodeFSDefault(CALLBACKS_FILENAME);
+    CALLBACK_MODULE = PyImport_Import(Name);
+
+    PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_INIT_FUNCTION);
+    PyObject_CallObject(Func, NULL);
+
+    Py_DECREF(Name);
+    Py_DECREF(Func);
 }
 
 void Py_CL_CreateCmd(usercmd_t *cmd) {
@@ -43,7 +48,6 @@ void Py_CL_CreateCmd(usercmd_t *cmd) {
     PyTuple_SetItem(Args, 8, PyLong_FromLong(cmd->upmove));
 
     PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_CREATECMD_FUNCTION);
-
     PyObject *Value = PyObject_CallObject(Func, Args);
 
     // Replace values in the usercmt_t struct with the returned values
@@ -67,7 +71,6 @@ void Py_CL_StartScript(char *scriptClassName, char *arg) {
     PyTuple_SetItem(Args, 1, PyUnicode_FromString(arg));
 
     PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_STARTSCRIPT_FUNCTION);
-
     PyObject_CallObject(Func, Args);
 
     Py_DECREF(Args);
@@ -79,7 +82,17 @@ void Py_CL_StopScript(char *scriptClassName) {
     PyTuple_SetItem(Args, 0, PyUnicode_FromString(scriptClassName));
 
     PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_STOPSCRIPT_FUNCTION);
+    PyObject_CallObject(Func, Args);
 
+    Py_DECREF(Args);
+    Py_DECREF(Func);
+}
+
+void Py_CL_ParseSnapshot(clientActive_t *cl) {
+    PyObject *Args = PyTuple_New(1);
+    PyTuple_SetItem(Args, 0, PyLong_FromLong(cl->serverTime));
+
+    PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_PARSESNAPSHOT_FUNCTION);
     PyObject_CallObject(Func, Args);
 
     Py_DECREF(Args);

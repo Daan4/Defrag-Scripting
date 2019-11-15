@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 // client.h -- primary header for client
+#ifndef __CLIENT_H
+#define __CLIENT_H
 
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
@@ -672,3 +674,5 @@ int  DL_Begin( const char *map, qboolean nonblocking );
 int  DL_Continue( void );
 void DL_Interrupt( void );
 void DL_Info( qboolean console );
+
+#endif
