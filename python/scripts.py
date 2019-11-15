@@ -5,14 +5,6 @@ import functools
 from structs import usercmd_t
 
 
-# Return a list of scripts to run
-def init_scripts():
-    #x = TestScript()
-    #x = UsercmdRecorderScript("test.csv")  # recorded as 15.496
-    x = UsercmdReplayScript("test.csv")
-    return [x]
-
-
 def log_exceptions(func):
     @functools.wraps(func)
     def inner(*args, **kwargs):
@@ -24,31 +16,66 @@ def log_exceptions(func):
 
 
 class BaseScript:
+    def __init__(self):
+        self.active = False
+
+    def on_start(self, arg):
+        """Called when script is started by startscript console command"""
+        pass
+
+    def on_stop(self):
+        """Called when script is stopped by stopscript console command"""
+        pass
+
     @log_exceptions
     def run(self, callback, *args):
-        x = getattr(self, callback)(*args)
-        return x
+        if self.active or callback == "CL_StartScript":
+            return getattr(self, callback)(*args)
+        else:
+            if len(args) == 1:
+                return args[0]
+            else:
+                return args
 
     def CL_CreateCmd(self, cmd):
         return cmd
 
+    def CL_StartScript(self, script_class_name, arg):
+        """Arg is passed from the "startscript <scriptname> [<arg>] console command"""
+        if script_class_name.lower() == self.__class__.__name__.lower():
+            self.active = True
+            self.on_start(arg)
 
-class DemoRecorderScript(BaseScript):
+    def CL_StopScript(self, script_class_name=None):
+        if script_class_name is None or script_class_name.lower() == self.__class__.__name__.lower():
+            self.active = False
+            self.on_stop()
+
+
+class DemoRecorder(BaseScript):
     pass
 
 
-class UsercmdRecorderScript(BaseScript):
-    def __init__(self, filename):
-        self.csv_writer = csv.writer(open(filename, "w", newline=''))
+class UsercmdRecorder(BaseScript):
+    def __init__(self):
+        super().__init__()
+        self.csv_writer = None
 
     def CL_CreateCmd(self, cmd):
         self.csv_writer.writerow(tuple(cmd))
         return cmd
 
+    def on_start(self, filename):
+        self.csv_writer = csv.writer(open(filename, "w", newline=""))
 
-class UsercmdReplayScript(BaseScript):
-    def __init__(self, filename):
-        self.csv_reader = csv.reader(open(filename, "r"))
+    def on_stop(self):
+        self.csv_writer = None
+
+
+class UsercmdReplay(BaseScript):
+    def __init__(self):
+        super().__init__()
+        self.csv_reader = None
 
     def CL_CreateCmd(self, cmd):
         # keep reading from csv file until we reached the end, then pass user input again
@@ -60,5 +87,10 @@ class UsercmdReplayScript(BaseScript):
                 new_cmd.server_time = cmd.server_time
                 return new_cmd
             except StopIteration:
-                self.csv_reader = None
-        return cmd
+                self.CL_StopScript()
+
+    def on_start(self, filename):
+        self.csv_reader = csv.reader(open(filename, "r"))
+
+    def on_stop(self):
+        self.csv_reader = None

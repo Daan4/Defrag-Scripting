@@ -7,6 +7,8 @@
 const char *CALLBACKS_FILENAME = "callbacks";
 const char *CL_INITCGAME_FUNCTION = "CL_InitCGame";
 const char *CL_CREATECMD_FUNCTION = "CL_CreateCmd";
+const char *CL_STARTSCRIPT_FUNCTION = "CL_StartScript";
+const char *CL_STOPSCRIPT_FUNCTION = "CL_StopScript";
 
 int initialized = 0;
 PyObject *CALLBACK_MODULE;
@@ -57,4 +59,29 @@ void Py_CL_CreateCmd(usercmd_t *cmd) {
     Py_DECREF(Args);
     Py_DECREF(Func);
     Py_DECREF(Value);
+}
+
+void Py_CL_StartScript(char *scriptClassName, char *arg) {
+    PyObject *Args = PyTuple_New(2);
+    PyTuple_SetItem(Args, 0, PyUnicode_FromString(scriptClassName));
+    PyTuple_SetItem(Args, 1, PyUnicode_FromString(arg));
+
+    PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_STARTSCRIPT_FUNCTION);
+
+    PyObject_CallObject(Func, Args);
+
+    Py_DECREF(Args);
+    Py_DECREF(Func);
+}
+
+void Py_CL_StopScript(char *scriptClassName) {
+    PyObject *Args = PyTuple_New(1);
+    PyTuple_SetItem(Args, 0, PyUnicode_FromString(scriptClassName));
+
+    PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_STOPSCRIPT_FUNCTION);
+
+    PyObject_CallObject(Func, Args);
+
+    Py_DECREF(Args);
+    Py_DECREF(Func);
 }

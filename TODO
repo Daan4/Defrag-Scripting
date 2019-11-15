@@ -1,21 +1,18 @@
 demo list in ui is empty (playing and recording demoes works tho) seems like this iodfengine version is just crap
 
-add custom cvar to exec scripts /execscript or smt
-
 idea: ultimate hodor bot
 
 automate load / deployment / launch engine
 
 figure out how to do hotswapping python code without restarting engine
 
-better debugging tools for python code -> for starter try catch entire program and write most detailed stacktrace to error.log
-
 record inputs from demoes for playback -> look into saving / writing playerstate in snapshot / clientsnapshot
 
-if it fails to randomly compile -> probably wrong file endings
-
-fix makefile:
+makefile fixes
     sdl264.dll does not get copied automatically anymore?
     sync entire python folder automatically to a subfolder like /build/python
 
-build basescript class which logs any exceptions in run method to error.log
+list of potentially useful funcs to wrap:
+    com_printf prints to console
+
+add return values to startscript and stopscript to echo some feedback in the console

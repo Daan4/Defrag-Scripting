@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 // cl_main.c  -- client main loop
+#include "../python/pycallbacks.h"
 
 #include "client.h"
 #include <limits.h>
@@ -3504,6 +3505,42 @@ void CL_Sayto_f( void ) {
 	CL_AddReliableCommand(va("tell %i \"%s\"", clientNum, p ), qfalse);
 }
 
+// Used with python api
+// startscript <ScriptClassName> [<arg>]
+void CL_StartScript(void) {
+    char *scriptClassName;
+    char *arg = "";
+    int argc = Cmd_Argc();
+
+    if(argc != 2 && argc != 3)
+    {
+        Com_Printf("startscript <ScriptClassName> [<arg>]\n");
+        return;
+    }
+
+    scriptClassName = Cmd_Argv(1);
+    if(argc == 3) {
+      arg = Cmd_Argv(2);
+    }
+
+    Py_CL_StartScript(scriptClassName, arg);
+}
+
+// Used with python api
+// stopscript <ScriptClassName>
+void CL_StopScript(void) {
+    char *scriptClassName;
+
+    if(Cmd_Argc() != 2)
+    {
+        Com_Printf("stopscript <ScriptClassName>\n");
+        return;
+    }
+
+    scriptClassName = Cmd_Argv(1);
+    Py_CL_StopScript(scriptClassName);
+}
+
 /*
 ====================
 CL_Init
@@ -3708,6 +3745,10 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("model", CL_SetModel_f );
 	Cmd_AddCommand ("video", CL_Video_f );
 	Cmd_AddCommand ("stopvideo", CL_StopVideo_f );
+	// Used with python api
+	Cmd_AddCommand ("startscript", CL_StartScript);
+	Cmd_AddCommand ("stopscript", CL_StopScript);
+
 	if( !com_dedicated->integer ) {
 		Cmd_AddCommand ("sayto", CL_Sayto_f );
 		Cmd_SetCommandCompletionFunc( "sayto", CL_CompletePlayerName );
