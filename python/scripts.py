@@ -88,6 +88,7 @@ class UsercmdReplay(BaseScript):
                 return new_cmd
             except StopIteration:
                 self.CL_StopScript()
+        return cmd
 
     def on_start(self, filename):
         self.csv_reader = csv.reader(open(filename, "r"))
