@@ -1,10 +1,12 @@
+PORT TO QUAKE3E engine instead of iodfcrap
+
 demo list in ui is empty (playing and recording demoes works tho) seems like this iodfengine version is just crap
 
 idea: ultimate hodor bot
 
 automate load / deployment / launch engine
 
-figure out how to do hotswapping python code without restarting engine
+figure out how to do hotswapping python code without restarting engine /reloadpython cmd maybe
 
 record inputs from demoes for playback -> look into saving / writing playerstate in snapshot / clientsnapshot
 
@@ -15,5 +17,14 @@ makefile fixes
 list of potentially useful funcs to wrap:
     com_printf prints to console
 
+FIX DEMOES NOT SAVING PROPERLY
+
+continue to expose playerstate_t (bit of a chore tho)
+
 add return values to startscript and stopscript to echo some feedback in the console
 -> also use this to catch and inform user of wrong args / script names
+
+make usercmd record and replay work with delta angles
+FIX DELTA ANGLE ISSUE
+
+https://dimit.me/blog/2017/08/08/defrag-strafe-theory/
