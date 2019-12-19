@@ -7,6 +7,7 @@ ANGLE_MIN = 0
 # From qcommon/q_shared.h
 MOVE_RUN = 120  # if forwardmove or rightmove >= move_run: set button_walking
 
+BUTTON_NONE = 0
 BUTTON_ATTACK = 1
 BUTTON_TALK = 2
 BUTTON_USE_HOLDABLE = 4
