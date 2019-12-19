@@ -1,5 +1,8 @@
 #include "../client/client.h"
 
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+
 // Callback from client/cl_input.c : CL_CreateCmd
 void Py_CL_CreateCmd(usercmd_t *cmd);
 
@@ -17,3 +20,17 @@ void Py_CL_StopScript(char *scriptClassName);
 
 // Callback from client/cl_parse.c : CL_ParseSnapshot
 void Py_CL_ParseSnapshot(clientActive_t *cl);
+
+// Handle to qcommon/qcommon.h : Cbuf_ExecuteText;
+static PyObject *Py_Cbuf_ExecuteText(PyObject *self, PyObject *args);
+
+PyMODINIT_FUNC initq3df(void)
+
+// Helper functions
+PyObject *usercmdToTuple(usercmd_t *cmd);
+
+void tupleToUsercmd(PyObject *tuple, usercmd_t *cmd);
+
+PyObject *playerStateToTuple(playerState_t *ps);
+
+void tupleToPlayerState(PyObject *tuple, playerState_t *ps);
