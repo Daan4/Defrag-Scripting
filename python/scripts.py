@@ -2,7 +2,9 @@ from constants import *
 import csv
 import logging
 import functools
-from structs import usercmd_t
+from structs import *
+from handles import *
+from helpers import *
 
 
 def log_exceptions(func):
@@ -51,12 +53,15 @@ class BaseScript:
             self.active = False
             self.on_stop()
 
+    def CL_ParseSnapshot(self, *args):
+        return args
+
 
 class DemoRecorder(BaseScript):
     pass
 
 
-class UsercmdRecorder(BaseScript):
+class UsercmdRecord(BaseScript):
     def __init__(self):
         super().__init__()
         self.csv_writer = None
@@ -95,3 +100,35 @@ class UsercmdReplay(BaseScript):
 
     def on_stop(self):
         self.csv_reader = None
+
+
+class NiceWalkBot(BaseScript):
+    def __init__(self):
+        super().__init__()
+        self.next_rightmove = MOVE_MAX
+        self.start_time = None
+        self.angle_offset = 6.075  # 405 @ 6
+
+    def CL_CreateCmd(self, cmd):
+        if self.start_time is None:
+            self.start_time = cmd.server_time
+        elif cmd.server_time - self.start_time < 350:
+            # walk backwards for a bit into the back wall
+            cmd.forwardmove = MOVE_MIN
+        elif cmd.server_time - self.start_time < 475:
+            # w only for a bit
+            cmd.forwardmove = MOVE_MAX
+        elif cmd.server_time - self.start_time < 14000:
+            # walk forwards to end
+            cmd.forwardmove = MOVE_MAX
+            cmd.rightmove = self.next_rightmove
+            cmd.angles_2 = degrees_to_angle(-90 + self.angle_offset)
+            self.next_rightmove *= -1
+            self.angle_offset *= -1
+        else:
+            self.CL_StopScript()
+        return cmd
+
+    def on_stop(self):
+        self.start_time = None
+        self.next_rightmove = MOVE_MAX
