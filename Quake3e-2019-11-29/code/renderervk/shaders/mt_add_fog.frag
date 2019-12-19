@@ -1,0 +1,48 @@
+#version 450
+
+layout(set = 0, binding = 0) uniform UBO {
+	// VERTEX
+	vec4 eyePos;
+	vec4 lightPos;
+	//  VERTEX-FOG
+	vec4 fogDistanceVector;
+	vec4 fogDepthVector;
+	vec4 fogEyeT;
+	// FRAGMENT
+	vec4 lightColor;
+	vec4 fogColor;
+	// linear dynamic light
+	vec4 lightVector;
+};
+layout(set = 1, binding = 0) uniform sampler2D texture0;
+layout(set = 2, binding = 0) uniform sampler2D texture1;
+layout(set = 3, binding = 0) uniform sampler2D texture2; // fog texture
+
+layout(location = 0) in vec4 frag_color;
+layout(location = 1) in vec2 frag_tex_coord0;
+layout(location = 2) in vec2 frag_tex_coord1;
+layout(location = 3) in vec2 fog_tex_coord; // fog txcoords
+
+layout(location = 0) out vec4 out_color;
+
+layout (constant_id = 0) const int alpha_test_func = 0;
+layout (constant_id = 1) const float alpha_test_value = 0.0;
+
+void main() {
+	vec4 color_a = frag_color * texture(texture0, frag_tex_coord0);
+	vec4 color_b = texture(texture1, frag_tex_coord1);
+	vec4 fog = texture(texture2, fog_tex_coord);
+	vec4 base = vec4(color_a.rgb + color_b.rgb, color_a.a * color_b.a);
+
+	if (alpha_test_func == 1) {
+		if (base.a == alpha_test_value) discard;
+	} else if (alpha_test_func == 2) {
+		if (base.a >= alpha_test_value) discard;
+	} else if (alpha_test_func == 3) {
+		if (base.a < alpha_test_value) discard;
+	}
+
+	fog = fog * fogColor;
+
+	out_color = mix( base, fog, fog.a );
+}
