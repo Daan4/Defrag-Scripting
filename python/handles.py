@@ -7,4 +7,4 @@ def echo(msg):
 
 
 def kill():
-    Py_Cbuf_ExecuteText("asfasefaskill\n")
+    Py_Cbuf_ExecuteText("kill\n")

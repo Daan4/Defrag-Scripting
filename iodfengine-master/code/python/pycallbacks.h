@@ -24,8 +24,6 @@ void Py_CL_ParseSnapshot(clientActive_t *cl);
 // Handle to qcommon/qcommon.h : Cbuf_ExecuteText;
 static PyObject *Py_Cbuf_ExecuteText(PyObject *self, PyObject *args);
 
-PyMODINIT_FUNC initq3df(void)
-
 // Helper functions
 PyObject *usercmdToTuple(usercmd_t *cmd);
 
