@@ -1,10 +1,8 @@
-
-import csv
 import logging
 import functools
 import threading
+import time
 from constants import *
-from structs import *
 from handles import *
 from helpers import *
 
@@ -59,49 +57,15 @@ class BaseScript:
         return ps
 
 
-class DemoRecorder(BaseScript):
-    pass
-
-
-class UsercmdRecord(BaseScript):
+class DefaultScript(BaseScript):
+    # Same as BaseScript, but any class inheriting this will be started by CL_Init
     def __init__(self):
         super().__init__()
-        self.csv_writer = None
-
-    def CL_CreateCmd(self, cmd):
-        self.csv_writer.writerow(tuple(cmd))
-        return cmd
-
-    def on_start(self, filename):
-        self.csv_writer = csv.writer(open(filename, "w", newline=""))
-
-    def on_stop(self):
-        self.csv_writer = None
 
 
-class UsercmdReplay(BaseScript):
+class LatestPlayerState(DefaultScript):
     def __init__(self):
         super().__init__()
-        self.csv_reader = None
-
-    def CL_CreateCmd(self, cmd):
-        # keep reading from csv file until we reached the end, then pass user input again
-        # returns a tuple instead of usercmd_t class but this doesn't really matter atm
-        if self.csv_reader is not None:
-            try:
-                row = list(map(int, next(self.csv_reader)))
-                new_cmd = usercmd_t(*row)
-                new_cmd.server_time = cmd.server_time
-                return new_cmd
-            except StopIteration:
-                self.CL_StopScript()
-        return cmd
-
-    def on_start(self, filename):
-        self.csv_reader = csv.reader(open(filename, "r"))
-
-    def on_stop(self):
-        self.csv_reader = None
 
 
 class KillScript(BaseScript):
@@ -130,20 +94,24 @@ class EchoStuff(BaseScript):
         super().__init__()
 
     def CL_ParseSnapshot(self, ps):
-        echo(f"CL_ParseSnapshot: {ps.command_time}")
+        echo("CL_ParseSnapshot".rjust(20) + str(ps.command_time).rjust(20) + str(time.time() * 1000).rjust(20))
         return ps
 
     def CL_CreateCmd(self, cmd):
-        echo(f"CL_CreateCmd: {cmd.server_time}")
+        echo("CL_CreateCmd".rjust(20) + str(cmd.server_time).rjust(20) + str(time.time() * 1000).rjust(20))
         return cmd
 
 
 class NiceWalkBot(BaseScript):
+    # nicewalk-nowall bot
     def __init__(self):
         super().__init__()
         self.next_rightmove = MOVE_MAX
         self.start_time = None
-        self.angle_offset = 6.075  # 405 @ 6
+
+        # Settings
+        self.angle_offset_change = 0.1
+        self.angle_offset = 5.5  # 405 @ 6
 
     def CL_CreateCmd(self, cmd):
         if self.start_time is None:
@@ -151,7 +119,7 @@ class NiceWalkBot(BaseScript):
         elif cmd.server_time - self.start_time < 350:
             # walk backwards for a bit into the back wall
             cmd.forwardmove = MOVE_MIN
-        elif cmd.server_time - self.start_time < 475:
+        elif cmd.server_time - self.start_time < 450:
             # w only for a bit
             cmd.forwardmove = MOVE_MAX
         elif cmd.server_time - self.start_time < 14000:

@@ -19,13 +19,17 @@ def CL_InitCGame():
 
 def CL_Init():
     os.makedirs(os.path.dirname(DEBUG_LOG_FILENAME), exist_ok=True)
-    logging.basicConfig(filename=DEBUG_LOG_FILENAME, filemode='w', format='%(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
+    logging.basicConfig(filename=DEBUG_LOG_FILENAME, filemode='w', format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG, datefmt="%Y-%m-%d %H:%M:%S")
 
     # Populate script_classes via inspection of scripts.py
     # Add any class which has BaseScript as a base class
     global script_instances
     classes = inspect.getmembers(sys.modules["scripts"], inspect.isclass)
-    script_instances = [x[1]() for x in classes if x[1].__bases__[0] is scripts.BaseScript]
+    script_instances = [x[1]() for x in classes if x[1].__bases__[0] in [scripts.BaseScript, scripts.DefaultScript]]
+    # Find and Start any default scripts
+    default_script_instances = [x[1]() for x in classes if x[1].__bases__[0] is scripts.DefaultScript]
+    for default_script in default_script_instances:
+        CL_StartScript(default_script.__class__.__name__, "")
 
 
 def CL_CreateCmd(*args):
@@ -50,10 +54,7 @@ def CL_StopScript(script_class_name):
 
 def CL_ParseSnapshot(*args):
     # logging.debug("CL_ParseSnapshot " + " ".join(map(str, args)))
-    logging.debug(args)
     ps = playerstate_t(*args)
-    logging.debug(args)
-    logging.debug(ps)
     for script in script_instances:
         script.run(CL_ParseSnapshot.__name__, ps)
     return tuple(ps)

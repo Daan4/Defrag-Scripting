@@ -12,7 +12,7 @@ Building on Windows using Windows Subsystem for Linux
     cd /mnt/d/Libraries/Documents/pycharmprojects/Defrag-Scripting/Quake3e-2019-11-29
 
 4) make (make sure the python include path points to your windows installation of python, escaping spaces with \)
-    make PLATFORM="mingw32" CC="x86_64-w64-mingw32-gcc" ARCH="x86_64" PYTHON="/mnt/d/Program\ Files/Python/Python38" CLIENT_EXTRA_FILES="../python/callbacks.py ../python/constants.py ../python/handles.py ../python/helpers.py ../python/scripts.py ../python/structs.py"
+    make PLATFORM="mingw32" CC="x86_64-w64-mingw32-gcc" ARCH="x86_64" PYTHON="/mnt/d/Program\ Files/Python/Python38" CLIENT_EXTRA_FILES="../python/callbacks.py ../python/constants.py ../python/handles.py ../python/helpers.py ../python/scripts.py ../python/structs.py ../python/recording_playback.py"
 
 Notes:
     If there's an error related to "VersionHelpers.h" , find and replace each occurrence with "versionhelpers.h"
