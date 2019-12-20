@@ -13,9 +13,7 @@ class BaseStruct:
 class usercmd_t(BaseStruct):
     def __init__(self, server_time, angles_1, angles_2, angles_3, buttons, weapon, forwardmove, rightmove, upmove):
         self.server_time = server_time
-        self.angles_1 = angles_1
-        self.angles_2 = angles_2
-        self.angles_3 = angles_3
+        self.angles = [angles_1, angles_2, angles_3]
         self.buttons = buttons
         self.weapon = weapon
         self.forwardmove = forwardmove
@@ -31,18 +29,12 @@ class playerstate_t(BaseStruct):
         self.pm_flags = args[3]
         self.pm_time = args[4]
 
-        self.origin_1 = args[5]
-        self.origin_2 = args[6]
-        self.origin_3 = args[7]
-        self.velocity_1 = args[8]
-        self.velocity_2 = args[9]
-        self.velocity_3 = args[10]
+        self.origin = [args[5], args[6], args[7]]
+        self.velocity = [args[8], args[9], args[10]]
         self.weapon_time = args[11]
         self.gravity = args[12]
         self.speed = args[13]
-        self.delta_angles_1 = args[14]
-        self.delta_angles_2 = args[15]
-        self.delta_angles_3 = args[16]
+        self.delta_angles = [args[14], args[15], args[16]]
 
         self.ground_entity_num = args[17]
 
@@ -54,15 +46,45 @@ class playerstate_t(BaseStruct):
 
         self.movement_dir = args[22]
 
-        self.grapple_point_1 = args[23]
-        self.grapple_point_2 = args[24]
-        self.grapple_point_3 = args[25]
+        self.grapple_point = [args[23], args[24], args[25]]
 
         self.e_flags = args[26]
 
         self.event_sequence = args[27]
         self.events = [args[28], args[29]]
         self.event_parms = [args[30], args[31]]
-        #todo continue?
 
+        self.external_event = args[32]
+        self.external_event_parm = args[33]
+        self.external_event_time = args[34]
 
+        self.client_num = args[35]
+        self.weapon = args[36]
+        self.weapon_state = args[37]
+
+        self.view_angles = [args[38], args[39], args[40]]
+        self.view_height = args[41]
+
+        self.damage_event = args[42]
+        self.damage_yaw = args[43]
+        self.damage_pitch = args[44]
+        self.damage_count = args[45]
+
+        self.stats = []
+        self.persistant = []
+        self.powerups = []
+        self.ammo = []
+        for i in range(16):
+            self.stats.append(args[46 + i])
+            self.persistant.append(args[62 + i])
+            self.powerups.append(args[78 + i])
+            self.ammo.append(args[94 + i])
+
+        self.generic_1 = args[110]
+        self.loop_sound = args[111]
+        self.jumppad_ent = args[112]
+
+        self.ping = args[113]
+        self.pmove_framecount = args[114]
+        self.jumppad_frame = args[115]
+        self.entity_event_sequence = args[116]

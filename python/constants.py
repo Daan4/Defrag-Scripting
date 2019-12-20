@@ -1,3 +1,8 @@
+# angle indices
+PITCH = 0
+YAW = 1
+ROLL = 2
+
 # usercmd_t value limits
 MOVE_MAX = 127
 MOVE_MIN = -127

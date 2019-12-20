@@ -14,7 +14,7 @@ def log_exceptions(func):
     def inner(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except Exception as e:
+        except Exception:
             logging.exception(f"Exception in {func.__name__}")
     return inner
 
@@ -55,8 +55,8 @@ class BaseScript:
             self.active = False
             self.on_stop()
 
-    def CL_ParseSnapshot(self, *args):
-        return args
+    def CL_ParseSnapshot(self, ps):
+        return ps
 
 
 class DemoRecorder(BaseScript):
@@ -115,10 +115,27 @@ class KillScript(BaseScript):
             cmd.buttons |= BUTTON_ATTACK
             self.shoot = False
             self.CL_StopScript()
+        return cmd
+
+    def respawn(self):
+        self.shoot = True
 
     def on_start(self, _):
         kill()
-        t =
+        threading.Timer(0.05, self.respawn).start()
+
+
+class EchoStuff(BaseScript):
+    def __init__(self):
+        super().__init__()
+
+    def CL_ParseSnapshot(self, ps):
+        echo(f"CL_ParseSnapshot: {ps.command_time}")
+        return ps
+
+    def CL_CreateCmd(self, cmd):
+        echo(f"CL_CreateCmd: {cmd.server_time}")
+        return cmd
 
 
 class NiceWalkBot(BaseScript):
@@ -141,7 +158,7 @@ class NiceWalkBot(BaseScript):
             # walk forwards to end
             cmd.forwardmove = MOVE_MAX
             cmd.rightmove = self.next_rightmove
-            cmd.angles_2 = degrees_to_angle(-90 + self.angle_offset)
+            cmd.angles[YAW] = degrees_to_angle(-90 + self.angle_offset)
             self.next_rightmove *= -1
             self.angle_offset *= -1
         else:

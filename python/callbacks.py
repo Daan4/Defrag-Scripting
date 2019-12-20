@@ -50,10 +50,13 @@ def CL_StopScript(script_class_name):
 
 def CL_ParseSnapshot(*args):
     # logging.debug("CL_ParseSnapshot " + " ".join(map(str, args)))
-    #logging.debug("hoi{")
-    #for script in script_instances:
-    #script.run(CL_StopScript.__name__, *args)
-    pass
+    logging.debug(args)
+    ps = playerstate_t(*args)
+    logging.debug(args)
+    logging.debug(ps)
+    for script in script_instances:
+        script.run(CL_ParseSnapshot.__name__, ps)
+    return tuple(ps)
 
 
 if __name__ == "__main__":
