@@ -155,12 +155,12 @@ PyObject *playerStateToTuple(playerState_t *ps) {
     PyTuple_SetItem(tuple, 3, PyLong_FromLong(ps->pm_flags));
     PyTuple_SetItem(tuple, 4, PyLong_FromLong(ps->pm_time));
 
-    PyTuple_SetItem(tuple, 5, PyLong_FromLong(ps->origin[0]));
-    PyTuple_SetItem(tuple, 6, PyLong_FromLong(ps->origin[1]));
-    PyTuple_SetItem(tuple, 7, PyLong_FromLong(ps->origin[2]));
-    PyTuple_SetItem(tuple, 8, PyLong_FromLong(ps->velocity[0]));
-    PyTuple_SetItem(tuple, 9, PyLong_FromLong(ps->velocity[1]));
-    PyTuple_SetItem(tuple, 10, PyLong_FromLong(ps->velocity[2]));
+    PyTuple_SetItem(tuple, 5, PyFloat_FromDouble(ps->origin[0]));
+    PyTuple_SetItem(tuple, 6, PyFloat_FromDouble(ps->origin[1]));
+    PyTuple_SetItem(tuple, 7, PyFloat_FromDouble(ps->origin[2]));
+    PyTuple_SetItem(tuple, 8, PyFloat_FromDouble(ps->velocity[0]));
+    PyTuple_SetItem(tuple, 9, PyFloat_FromDouble(ps->velocity[1]));
+    PyTuple_SetItem(tuple, 10, PyFloat_FromDouble(ps->velocity[2]));
     PyTuple_SetItem(tuple, 11, PyLong_FromLong(ps->weaponTime));
     PyTuple_SetItem(tuple, 12, PyLong_FromLong(ps->gravity));
     PyTuple_SetItem(tuple, 13, PyLong_FromLong(ps->speed));
@@ -178,9 +178,9 @@ PyObject *playerStateToTuple(playerState_t *ps) {
 
     PyTuple_SetItem(tuple, 22, PyLong_FromLong(ps->movementDir));
 
-    PyTuple_SetItem(tuple, 23, PyLong_FromLong(ps->grapplePoint[0]));
-    PyTuple_SetItem(tuple, 24, PyLong_FromLong(ps->grapplePoint[1]));
-    PyTuple_SetItem(tuple, 25, PyLong_FromLong(ps->grapplePoint[2]));
+    PyTuple_SetItem(tuple, 23, PyFloat_FromDouble(ps->grapplePoint[0]));
+    PyTuple_SetItem(tuple, 24, PyFloat_FromDouble(ps->grapplePoint[1]));
+    PyTuple_SetItem(tuple, 25, PyFloat_FromDouble(ps->grapplePoint[2]));
 
     PyTuple_SetItem(tuple, 26, PyLong_FromLong(ps->eFlags));
 
@@ -198,9 +198,9 @@ PyObject *playerStateToTuple(playerState_t *ps) {
     PyTuple_SetItem(tuple, 36, PyLong_FromLong(ps->weapon));
     PyTuple_SetItem(tuple, 37, PyLong_FromLong(ps->weaponstate));
 
-    PyTuple_SetItem(tuple, 38, PyLong_FromLong(ps->viewangles[0]));
-    PyTuple_SetItem(tuple, 39, PyLong_FromLong(ps->viewangles[1]));
-    PyTuple_SetItem(tuple, 40, PyLong_FromLong(ps->viewangles[2]));
+    PyTuple_SetItem(tuple, 38, PyFloat_FromDouble(ps->viewangles[0]));
+    PyTuple_SetItem(tuple, 39, PyFloat_FromDouble(ps->viewangles[1]));
+    PyTuple_SetItem(tuple, 40, PyFloat_FromDouble(ps->viewangles[2]));
     PyTuple_SetItem(tuple, 41, PyLong_FromLong(ps->viewheight));
 
     PyTuple_SetItem(tuple, 42, PyLong_FromLong(ps->damageEvent));
@@ -228,7 +228,18 @@ PyObject *playerStateToTuple(playerState_t *ps) {
 }
 
 void tupleToPlayerState(PyObject *tuple,  playerState_t *ps) {
-    PyArg_ParseTuple(tuple, "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
+    PyArg_ParseTuple(tuple, "iiiiifffff"\
+                            "fiiiiiiiii"\
+                            "iiifffiiii"\
+                            "iiiiiiiiif"\
+                            "ffiiiiiiii"\
+                            "iiiiiiiiii"\
+                            "iiiiiiiiii"\
+                            "iiiiiiiiii"\
+                            "iiiiiiiiii"\
+                            "iiiiiiiiii"\
+                            "iiiiiiiiii"\
+                            "iiiiiii",
                      &(ps->commandTime),
                      &(ps->pm_type),
                      &(ps->bobCycle),
