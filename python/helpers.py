@@ -14,7 +14,7 @@ def angle_to_degrees(angle):
 # Convert degrees angle to usercmd_t
 def degrees_to_angle(degrees):
     degrees = degrees % 360
-    return int((degrees + 90) / 360 * 65535)
+    return int((degrees + 90) / 360 * 65535 + 0.5)
 
 
 # Convert XPCs usercmd json files to csv
