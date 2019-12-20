@@ -155,6 +155,7 @@ SDLDIR=$(MOUNT_DIR)/sdl
 CMDIR=$(MOUNT_DIR)/qcommon
 UDIR=$(MOUNT_DIR)/unix
 W32DIR=$(MOUNT_DIR)/win32
+PYDIR=$(MOUNT_DIR)/python
 BLIBDIR=$(MOUNT_DIR)/botlib
 NDIR=$(MOUNT_DIR)/null
 UIDIR=$(MOUNT_DIR)/ui
@@ -179,7 +180,7 @@ else
 endif
 endif
 
-BASE_CFLAGS =
+BASE_CFLAGS = -I/$(PYTHON)/include -L/$(PYTHON) -L/$(PYTHON)/libs
 
 ifneq ($(HAVE_VM_COMPILED),true)
   BASE_CFLAGS += -DNO_VM_COMPILED
@@ -363,6 +364,8 @@ ifdef MINGW
   LDFLAGS += -lwsock32 -lgdi32 -lwinmm -lole32 -lws2_32 -lpsapi -lcomctl32
 
   CLIENT_LDFLAGS=$(LDFLAGS)
+
+  CLIENT_LDFLAGS += -I/$(PYTHON)/include -L/$(PYTHON) -L/$(PYTHON)/libs -DMS_WIN64
 
   ifeq ($(USE_SDL),1)
 	BASE_CFLAGS += -DUSE_LOCAL_HEADERS=1 -I$(MOUNT_DIR)/libsdl/windows/include/SDL2
@@ -966,7 +969,8 @@ ifdef MINGW
     $(B)/client/win_main.o \
     $(B)/client/win_shared.o \
     $(B)/client/win_syscon.o \
-    $(B)/client/win_resource.o
+    $(B)/client/win_resource.o \
+    $(B)/client/pycallbacks.o
 
 ifeq ($(USE_SDL),1)
     Q3OBJ += \
@@ -1021,7 +1025,7 @@ endif # !MINGW
 $(B)/$(TARGET_CLIENT): $(Q3OBJ)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) -o $@ $(Q3OBJ) $(CLIENT_LDFLAGS) \
-		$(LDFLAGS)
+		$(LDFLAGS) -lpython38
 
 # modular renderers
 
@@ -1138,6 +1142,9 @@ $(B)/client/%.o: $(ADIR)/%.s
 	$(DO_AS)
 
 $(B)/client/%.o: $(CDIR)/%.c
+	$(DO_CC)
+
+$(B)/client/%.o: $(PYDIR)/%.c
 	$(DO_CC)
 
 $(B)/client/%.o: $(SDIR)/%.c

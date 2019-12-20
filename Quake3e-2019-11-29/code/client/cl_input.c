@@ -21,7 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 // cl.input.c  -- builds an intended movement command to send to the server
 
-#include "client.h"
+// #include "client.h"
+
+#include "../python/pycallbacks.h"
 
 static unsigned frame_msec;
 static int old_com_frameTime;
@@ -627,6 +629,8 @@ static usercmd_t CL_CreateCmd( void ) {
 			SCR_DebugGraph( fabs(cl.viewangles[PITCH] - oldAngles[PITCH]) );
 		}
 	}
+
+	Py_CL_CreateCmd(&cmd);
 
 	return cmd;
 }

@@ -21,7 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 // cl_cgame.c  -- client system interaction with client game
 
-#include "client.h"
+// #include "client.h"
+
+#include "../python/pycallbacks.h"
 
 #include "../botlib/botlib.h"
 
@@ -884,6 +886,9 @@ void CL_InitCGame( void ) {
 
 	// do not allow vid_restart for first time
 	cls.lastVidRestart = Sys_Milliseconds();
+
+	// Initialize the embedded Python interpreter
+	Py_CL_InitCGame();
 }
 
 

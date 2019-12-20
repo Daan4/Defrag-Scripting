@@ -1,7 +1,9 @@
-from constants import *
+
 import csv
 import logging
 import functools
+import threading
+from constants import *
 from structs import *
 from handles import *
 from helpers import *
@@ -100,6 +102,23 @@ class UsercmdReplay(BaseScript):
 
     def on_stop(self):
         self.csv_reader = None
+
+
+class KillScript(BaseScript):
+    # Combines /kill and +attack to respawn
+    def __init__(self):
+        super().__init__()
+        self.shoot = False
+
+    def CL_CreateCmd(self, cmd):
+        if self.shoot:
+            cmd.buttons |= BUTTON_ATTACK
+            self.shoot = False
+            self.CL_StopScript()
+
+    def on_start(self, _):
+        kill()
+        t =
 
 
 class NiceWalkBot(BaseScript):

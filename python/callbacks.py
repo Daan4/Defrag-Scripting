@@ -29,6 +29,7 @@ def CL_Init():
 
 
 def CL_CreateCmd(*args):
+    # logging.debug("CL_CreateCmd " + " ".join(map(str, args)))
     cmd = usercmd_t(*args)
     for script in script_instances:
         cmd = script.run(CL_CreateCmd.__name__, cmd)
@@ -48,8 +49,11 @@ def CL_StopScript(script_class_name):
 
 
 def CL_ParseSnapshot(*args):
-    logging.debug("test")
-    logging.debug(*args)
+    # logging.debug("CL_ParseSnapshot " + " ".join(map(str, args)))
+    #logging.debug("hoi{")
+    #for script in script_instances:
+    #script.run(CL_StopScript.__name__, *args)
+    pass
 
 
 if __name__ == "__main__":
@@ -57,3 +61,4 @@ if __name__ == "__main__":
     CL_InitCGame()
     CL_StartScript("usercmdreplay", "test.csv")
     CL_CreateCmd(1, 2, 3, 4, 5, 6, 7, 8, 9)
+    CL_ParseSnapshot(1, 2, 3, 4, 5, 6, 7, 8, 9)

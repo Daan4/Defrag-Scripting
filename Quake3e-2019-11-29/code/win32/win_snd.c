@@ -35,7 +35,7 @@ static qboolean	dsound_init;
 #ifdef USE_WASAPI
 static qboolean wasapi_init;
 
-#include <VersionHelpers.h>
+#include <versionhelpers.h>
 #include <mmreg.h>
 #include <mmdeviceapi.h>
 #include <audioclient.h>
