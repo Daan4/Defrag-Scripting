@@ -1,6 +1,9 @@
-demo list in ui is empty (playing and recording demoes works tho) seems like this iodfengine version is just crap
+ideas: ultimate hodor bot
+       parameter optimizing strafebot
 
-idea: ultimate hodor bot
+auto copy over python files, including a folder structure
+
+fix importing scripts_record_playback, crashes q3
 
 automate load / deployment / launch engine
 
@@ -8,21 +11,11 @@ figure out how to do hotswapping python code without restarting engine /reloadpy
 
 record inputs from demoes for playback -> look into saving / writing playerstate in snapshot / clientsnapshot
 
-makefile fixes
-    sdl264.dll does not get copied automatically anymore?
-    sync entire python folder automatically to a subfolder like /build/python
-
 list of potentially useful funcs to wrap:
     com_printf prints to console
 
-FIX DEMOES NOT SAVING PROPERLY
-
-continue to expose playerstate_t (bit of a chore tho)
-
-add return values to startscript and stopscript to echo some feedback in the console
--> also use this to catch and inform user of wrong args / script names
+allow *args in startscript, and inform user of invalid arguments
 
 make usercmd record and replay work with delta angles
-FIX DELTA ANGLE ISSUE
 
-https://dimit.me/blog/2017/08/08/defrag-strafe-theory/
+some maffs https://dimit.me/blog/2017/08/08/defrag-strafe-theory/
