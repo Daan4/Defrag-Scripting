@@ -3,6 +3,12 @@ PITCH = 0
 YAW = 1
 ROLL = 2
 
+# direction enum
+FORWARD = 0
+BACKWARD = 1
+LEFT = 2
+RIGHT = 3
+
 # usercmd_t value limits
 MOVE_MAX = 127
 MOVE_MIN = -127

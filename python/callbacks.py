@@ -32,14 +32,17 @@ def CL_Init():
     # Add any class which has BaseScript as a base class
     global script_instances
     classes = []
+
     for file in SCRIPT_FILES:
         classes += inspect.getmembers(sys.modules[file], inspect.isclass)
     script_instances = [x[1]() for x in classes if x[1].__bases__[0] in [scripts.BaseScript, scripts.DefaultScript]]
-    logging.debug(script_instances)
+    logging.debug(f"all scripts: {script_instances}")
     # Find and Start any default scripts
     default_script_instances = [x[1]() for x in classes if x[1].__bases__[0] is scripts.DefaultScript]
+    logging.debug(f"default scripts: {default_script_instances}")
     for default_script in default_script_instances:
-        CL_StartScript(default_script.__class__.__name__, "")
+        if default_script.__class__.__name__ != scripts.DefaultScript.__name__:
+            CL_StartScript(default_script.__class__.__name__, "")
 
 
 def CL_CreateCmd(*args):
@@ -49,12 +52,11 @@ def CL_CreateCmd(*args):
     return tuple(cmd)
 
 
-def CL_StartScript(script_class_name, arg=""):
-    logging.debug(f"Starting script \"{script_class_name}\" with arg \"{arg}\"")
+def CL_StartScript(script_class_name, *args):
+    logging.debug(f"Starting script \"{script_class_name}\" with args \"{args}\"")
     for script in script_instances:
-        if script.run(CL_StartScript.__name__, script_class_name, arg):
+        if script.run(CL_StartScript.__name__, script_class_name, *args):
             return script
-    echo(f"Script {script_class_name} not found or already running")
 
 
 def CL_StopScript(script_class_name):
@@ -62,7 +64,6 @@ def CL_StopScript(script_class_name):
     for script in script_instances:
         if script.run(CL_StopScript.__name__, script_class_name):
             return script
-    echo(f"Script {script_class_name} not found or not running")
 
 
 def CL_ParseSnapshot(*args):
