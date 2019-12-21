@@ -1,21 +1,29 @@
 ideas: ultimate hodor bot
        parameter optimizing strafebot
 
+easier way to timer / wait on script finish
+add target speed / target params to be checked from ps
+ie walk to 320ups
+
+allow turning while walking for example,
+maybe split up cjturn into viewturn and cj presses
+
 auto copy over python files, including a folder structure
 
 fix importing scripts_record_playback, crashes q3
 
 automate load / deployment / launch engine
 
-figure out how to do hotswapping python code without restarting engine /reloadpython cmd maybe
-
 record inputs from demoes for playback -> look into saving / writing playerstate in snapshot / clientsnapshot
-
-list of potentially useful funcs to wrap:
-    com_printf prints to console
-
-allow *args in startscript, and inform user of invalid arguments
 
 make usercmd record and replay work with delta angles
 
 some maffs https://dimit.me/blog/2017/08/08/defrag-strafe-theory/
+
+add some stuff to usercmd_t to automatically addding/subbing ps.delta_angles when reading/writing cmd.angles
+
+somehow allow kwargs in do()
+
+why does startangle need -90? Maybe implementation of angle helpers is wrong ,see xpc's one which is apparently from c code
+
+make it so that started scripts run immediately (eg if created in CL_CreateCmd, also run the started script's CL_CreateCmd (if they are defined earlier they will only get called 1 frame later)
