@@ -54,6 +54,11 @@ void Py_CL_Init(void) {
     Py_DECREF(Func);
 }
 
+void Py_ReloadPython(void) {
+    Py_FinalizeEx();
+    Py_CL_Init();
+}
+
 void Py_CL_CreateCmd(usercmd_t *cmd) {
     // Pass usercmd_t struct fields to python and replace cmd with the return values
     PyObject *Args = usercmdToTuple(cmd);
@@ -99,7 +104,7 @@ void Py_CL_ParseSnapshot(clientActive_t *cl) {
     PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_PARSESNAPSHOT_FUNCTION);
     PyObject *Value = PyObject_CallObject(Func, Args);
 
-    //tupleToPlayerState(Value, ps);
+    tupleToPlayerState(Value, ps);
 
     Py_DECREF(Args);
     Py_DECREF(Func);
@@ -125,11 +130,7 @@ PyObject *Py_GetPredictedPlayerstate(PyObject *self, PyObject *args)
 {
     // read predicted playerstate from defrag binary memory
     // offset depends on defrag version this is for .25
-    if(!cgvm || !cgvm->dataBase)
-        Py_RETURN_NONE;
-
-    playerState_t *ps = (playerState_t *)((unsigned long) cgvm->dataBase + 957848);
-    Py_RETURN_NONE;
+    return playerStateToTuple((playerState_t *)(cgvm->dataBase + 957848));
 }
 
 // CONVERTER FUNCTIONS

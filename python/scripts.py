@@ -4,7 +4,7 @@ import threading
 import time
 from constants import *
 from handles import echo, kill, get_predicted_playerstate
-from helpers import do, stop, degrees_to_angle
+from helpers import do, stop, degrees_to_angle, angle_to_degrees
 
 ps = None
 
@@ -83,6 +83,7 @@ class CommandTimeModifier(DefaultScript):
             cmd.server_time = pps.command_time + 8
         return cmd
 
+
 class LatestPlayerState(DefaultScript):
     """Keep ps global up-to-date with latest playerState_t"""
     def __init__(self):
@@ -125,6 +126,10 @@ class Walk(BaseScript):
         self.direction = None
 
     def CL_CreateCmd(self, cmd):
+        if self.base_angle is None:
+            self.base_angle = angle_to_degrees(cmd.angles[YAW] + ps.delta_angles[YAW])
+        logging.debug(f"walking in direction {self.base_angle}")
+
         if self.direction == FORWARD:
             cmd.forwardmove = MOVE_MAX
             if self.angle_offset != 0:
@@ -141,21 +146,69 @@ class Walk(BaseScript):
             cmd.rightmove = MOVE_MAX
             if self.angle_offset != 0:
                 cmd.forwardmove = self.next_movespeed
+
         cmd.angles[YAW] = degrees_to_angle(self.base_angle + self.angle_offset) - ps.delta_angles[YAW]
         self.next_movespeed *= -1
         self.angle_offset *= -1
         return cmd
 
-    def on_start(self, direction, angle_deg, angle_offset_deg=0):
-        self.base_angle = angle_deg - 90
+    def on_start(self, direction, angle_deg=None, angle_offset_deg=0):
+        self.base_angle = angle_deg
+        if self.base_angle is not None:
+            self.base_angle -= 90
         self.angle_offset = angle_offset_deg
         self.direction = direction
         self.next_movespeed = MOVE_MAX
 
 
-class WalkTurn(BaseScript):
-    # Yaws at max ups in a given direction until reaching a given angle
-    pass
+class CjTurn(BaseScript):
+    """Turn in a given direction until reaching a given angle while holding forward+strafe
+    Yawspeed is given in angle/sec change, and defaults to optimal-ish yawspeed (vq3)
+    Will turn start_angle to start_angle + end_angle_offset in direction LEFT or RIGHT
+    If start_angle=None the initial angle is used as start angle
+    """
+    def __init__(self):
+        super().__init__()
+        self.start_time = None
+        self.yaw_speed = None
+        self.direction = None
+        self.start_angle = None
+        self.angle = None
+        self.end_angle_offset = None
+
+    def CL_CreateCmd(self, cmd):
+        if self.start_angle is None:
+            self.start_angle = angle_to_degrees(cmd.angles[YAW])
+        if self.start_time is None:
+            self.start_time = cmd.server_time
+            self.start_angle += angle_to_degrees(ps.delta_angles[YAW])
+        self.angle = self.start_angle
+
+        diff = cmd.server_time - self.start_time
+        cmd.forwardmove = MOVE_MAX
+        if self.direction == LEFT:
+            cmd.rightmove = MOVE_MIN
+            self.angle = self.start_angle + diff / ((self.end_angle_offset - self.start_angle) / self.yaw_speed * 1000) * (self.end_angle_offset - self.start_angle)
+        elif self.direction == RIGHT:
+            cmd.rightmove = MOVE_MAX
+            self.angle = self.start_angle + diff / ((self.start_angle - self.end_angle_offset) / self.yaw_speed * 1000) * (self.end_angle_offset - self.start_angle)
+
+        if self.angle >= self.start_angle + self.end_angle_offset:
+            self.angle = self.start_angle + self.end_angle_offset
+            cmd.rightmove = 0
+            cmd.forwardmove = 0
+            self.CL_StopScript()
+
+        cmd.angles[YAW] = degrees_to_angle(self.angle) - ps.delta_angles[YAW]
+        return cmd
+
+    def on_start(self, direction, yaw_speed=295, end_angle_offset=90, start_angle=None):
+        self.yaw_speed = yaw_speed
+        self.direction = direction
+        self.start_angle = start_angle
+        self.angle = None
+        self.end_angle_offset = end_angle_offset
+        self.start_time = None
 
 
 class EchoStuff(BaseScript):
@@ -177,6 +230,7 @@ class NiceWalkBot(BaseScript):
         super().__init__()
         self.start_time = None
         self.prev_diff = None
+        self.turnScript = None
 
     def CL_CreateCmd(self, cmd):
         if self.start_time is None:
@@ -185,25 +239,30 @@ class NiceWalkBot(BaseScript):
         if diff < 350:
             # walk backwards for a bit into the back wall
             do(Walk, BACKWARD, -90)
-        elif diff < 450:
-            # w only for a bit
+        elif diff < 700:
+            # walk forward up to at least 320 ups
             if self.prev_diff < 350:
                 stop(Walk)
-            do(Walk, FORWARD, -90)
-        elif diff < 13000:
-            # walk forwards to end
-            if self.prev_diff < 450:
+            do(Walk, FORWARD, -180)
+        elif diff < 13500:
+            if self.prev_diff < 700:
                 stop(Walk)
-            do(Walk, FORWARD, -90, 6)
+            # cj turn into start trigger
+            if self.turnScript is None:
+                self.turnScript = do(CjTurn, LEFT)
+            if not self.turnScript.running:
+                # walk forwards to end
+                do(Walk, FORWARD, None, 6)
         else:
             stop(Walk)
-            do(Kill)
+            #do(Kill)
             self.CL_StopScript()
         self.prev_diff = diff
         return cmd
 
     def on_stop(self):
         self.start_time = None
+        self.turnScript = None
         stop(Walk)
 
 

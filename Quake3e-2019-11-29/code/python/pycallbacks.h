@@ -12,10 +12,13 @@ void Py_CL_InitCGame(void);
 // Callback from client/cl_main.c : CL_Init
 void Py_CL_Init(void);
 
-// Callback from client/cl_main.c : CL_ExecScript
+// Callback from client/cl_main.c : CL_ReloadPython / CL_ExecScript
+void Py_ReloadPython(void);
+
+// Callback from client/cl_main.c : CL_StartScript / CL_ExecScript
 void Py_CL_StartScript(char *scriptClassName, char *arg);
 
-// Callback from client/cl_main.c : CL_StopScript
+// Callback from client/cl_main.c : CL_StopScript / CL_ExecScript
 void Py_CL_StopScript(char *scriptClassName);
 
 // Callback from client/cl_parse.c : CL_ParseSnapshot

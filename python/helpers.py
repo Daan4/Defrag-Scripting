@@ -3,14 +3,14 @@ import csv
 import logging
 
 
-def do(script_class, *args):
+def do(script_class, *args, **kwargs):
     """Start a script and return the script instance
     Only start if the script is not already running"""
     from callbacks import CL_StartScript
     if not script_running(script_class):
         return CL_StartScript(script_class.__name__, *args)
     else:
-        return None  # maybe raise exception here?
+        return None
 
 
 def script_running(script_class):

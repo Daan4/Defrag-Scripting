@@ -3729,6 +3729,12 @@ static void CL_InitGLimp_Cvars( void )
 #endif
 }
 
+// Reload the python interpreter (will refresh updated files)
+// pyreload
+void CL_ReloadPython(void) {
+    Py_ReloadPython();
+}
+
 // Used with python api
 // startscript <ScriptClassName> [<arg>]
 void CL_StartScript(void) {
@@ -3931,6 +3937,7 @@ void CL_Init( void ) {
     // Used with python api
 	Cmd_AddCommand ("startscript", CL_StartScript);
 	Cmd_AddCommand ("stopscript", CL_StopScript);
+	Cmd_AddCommand ("pyreload", CL_ReloadPython);
 
 	CL_InitRef();
 
