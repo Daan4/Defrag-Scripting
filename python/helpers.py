@@ -1,9 +1,8 @@
 import json
 import csv
-import logging
 
 
-def do(script_class, *args, **kwargs):
+def do(script_class, *args):
     """Start a script and return the script instance
     Only start if the script is not already running"""
     from callbacks import CL_StartScript
@@ -31,16 +30,12 @@ def stop(script_class):
 def angle_to_degrees(angle):
     """Convert usercmd_t angle to degrees from -90
     angle between 0 and 65535 inclusive"""
-    angle = angle / 65535 * 360 - 90
-    if angle > 180:
-        angle = -180 + angle % 180
-    return angle
+    return angle * 360 / 65536
 
 
 def degrees_to_angle(degrees):
     """Convert degrees angle to usercmd_t"""
-    degrees = degrees % 360
-    return int((degrees + 90) / 360 * 65535 + 0.5)
+    return int((degrees * 65536/360)) & 65535
 
 
 def json_to_csv(jsonfile, csvfile):

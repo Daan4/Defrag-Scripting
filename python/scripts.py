@@ -3,9 +3,10 @@ import logging
 import threading
 import time
 from constants import *
-from handles import echo, kill, get_predicted_playerstate
+from handles import echo, kill, get_predicted_playerstate, set_cl_viewangles
 from helpers import do, stop, degrees_to_angle, angle_to_degrees
 
+# Last known ps state, kept up to date by LatestPlayerState
 ps = None
 
 
@@ -17,6 +18,16 @@ def log_exceptions(func):
             return func(*args, **kwargs)
         except Exception:
             logging.exception(f"Exception in {func.__name__}")
+    return inner
+
+
+# decorator to store returned cmd in last_cmd
+def save_last_cmd(func):
+    @functools.wraps(func)
+    def inner(*args, **kwargs):
+        global last_cmd
+        last_cmd = func(*args, **kwargs)
+        return last_cmd
     return inner
 
 
@@ -44,6 +55,7 @@ class BaseScript:
             else:
                 return args
 
+    @save_last_cmd
     def CL_CreateCmd(self, cmd):
         return cmd
 
@@ -70,6 +82,25 @@ class DefaultScript(BaseScript):
     # Default scripts also get called first (in the order of declaration), before any of the other registered scripts.
     def __init__(self):
         super().__init__()
+
+
+class FinalScript(DefaultScript):
+    # Same as DefaultScript, except these get called last (in the order of declaration) after any of the other registered scripts.
+    def __init__(self):
+        super().__init__()
+
+
+class UpdateViewAngles(FinalScript):
+    """Update the cl->viewangles before returning the modified usercmd"""
+    def __init__(self):
+        super().__init__()
+
+    def CL_CreateCmd(self, cmd):
+        pitch = angle_to_degrees(cmd.angles[PITCH])
+        yaw = angle_to_degrees(cmd.angles[YAW])
+        roll = angle_to_degrees(cmd.angles[ROLL])
+        set_cl_viewangles(pitch, yaw, roll)
+        return cmd
 
 
 class CommandTimeModifier(DefaultScript):
@@ -128,7 +159,6 @@ class Walk(BaseScript):
     def CL_CreateCmd(self, cmd):
         if self.base_angle is None:
             self.base_angle = angle_to_degrees(cmd.angles[YAW] + ps.delta_angles[YAW])
-        logging.debug(f"walking in direction {self.base_angle}")
 
         if self.direction == FORWARD:
             cmd.forwardmove = MOVE_MAX
@@ -154,8 +184,6 @@ class Walk(BaseScript):
 
     def on_start(self, direction, angle_deg=None, angle_offset_deg=0):
         self.base_angle = angle_deg
-        if self.base_angle is not None:
-            self.base_angle -= 90
         self.angle_offset = angle_offset_deg
         self.direction = direction
         self.next_movespeed = MOVE_MAX
@@ -178,10 +206,9 @@ class CjTurn(BaseScript):
 
     def CL_CreateCmd(self, cmd):
         if self.start_angle is None:
-            self.start_angle = angle_to_degrees(cmd.angles[YAW])
+            self.start_angle = angle_to_degrees(cmd.angles[YAW] + ps.delta_angles[YAW])
         if self.start_time is None:
             self.start_time = cmd.server_time
-            self.start_angle += angle_to_degrees(ps.delta_angles[YAW])
         self.angle = self.start_angle
 
         diff = cmd.server_time - self.start_time
@@ -215,9 +242,9 @@ class EchoStuff(BaseScript):
     def __init__(self):
         super().__init__()
 
-    def CL_ParseSnapshot(self, _ps):
-        echo("CL_ParseSnapshot".rjust(20) + str(_ps.command_time).rjust(20) + str(time.time() * 1000).rjust(20))
-        return _ps
+    def CL_ParseSnapshot(self, ps):
+        echo("CL_ParseSnapshot".rjust(20) + str(ps.command_time).rjust(20) + str(time.time() * 1000).rjust(20))
+        return ps
 
     def CL_CreateCmd(self, cmd):
         echo("CL_CreateCmd".rjust(20) + str(cmd.server_time).rjust(20) + str(time.time() * 1000).rjust(20))
@@ -236,20 +263,20 @@ class NiceWalkBot(BaseScript):
         if self.start_time is None:
             self.start_time = cmd.server_time
         diff = cmd.server_time - self.start_time
-        if diff < 350:
+        if diff < 100:
             # walk backwards for a bit into the back wall
             do(Walk, BACKWARD, -90)
-        elif diff < 700:
+        elif diff < 400:
             # walk forward up to at least 320 ups
-            if self.prev_diff < 350:
+            if self.prev_diff < 100:
                 stop(Walk)
             do(Walk, FORWARD, -180)
         elif diff < 13500:
-            if self.prev_diff < 700:
+            if self.prev_diff < 400:
                 stop(Walk)
             # cj turn into start trigger
             if self.turnScript is None:
-                self.turnScript = do(CjTurn, LEFT)
+                self.turnScript = do(CjTurn, LEFT, 295, 120, 150)
             if not self.turnScript.running:
                 # walk forwards to end
                 do(Walk, FORWARD, None, 6)

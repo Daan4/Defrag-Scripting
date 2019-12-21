@@ -15,6 +15,7 @@ PyObject *CALLBACK_MODULE;
 static PyMethodDef Methods[] = {
     {"Py_Cbuf_ExecuteText", Py_Cbuf_ExecuteText, METH_VARARGS, "Execute a console command."},
     {"Py_GetPredictedPlayerstate", Py_GetPredictedPlayerstate, METH_VARARGS, "Get predicted playerstate."},
+    {"Py_UpdateViewangles", Py_UpdateViewangles, METH_VARARGS, "Update cl->viewangles."},
     {NULL, NULL, 0, NULL}
 };
 
@@ -131,6 +132,19 @@ PyObject *Py_GetPredictedPlayerstate(PyObject *self, PyObject *args)
     // read predicted playerstate from defrag binary memory
     // offset depends on defrag version this is for .25
     return playerStateToTuple((playerState_t *)(cgvm->dataBase + 957848));
+}
+
+PyObject *Py_UpdateViewangles(PyObject *self, PyObject *args)
+{
+    float pitch, yaw, roll;
+    if(!PyArg_ParseTuple(args, "fff", &pitch, &yaw, &roll))
+        return NULL;
+
+    cl.viewangles[0] = pitch;
+    cl.viewangles[1] = yaw;
+    cl.viewangles[2] = roll;
+
+    Py_RETURN_NONE;
 }
 
 // CONVERTER FUNCTIONS

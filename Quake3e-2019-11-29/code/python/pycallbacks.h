@@ -29,6 +29,8 @@ PyObject *Py_Cbuf_ExecuteText(PyObject *self, PyObject *args);
 
 PyObject *Py_GetPredictedPlayerstate(PyObject *self, PyObject *args);
 
+PyObject *Py_UpdateViewangles(PyObject *self, PyObject *args);
+
 // Helper functions
 PyObject *usercmdToTuple(usercmd_t *cmd);
 

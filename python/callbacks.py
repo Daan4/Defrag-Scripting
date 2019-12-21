@@ -35,15 +35,16 @@ def CL_Init():
 
     for file in SCRIPT_FILES:
         classes += inspect.getmembers(sys.modules[file], inspect.isclass)
-    # Register DefaultScript before BaseScript so they are ran first
+    # Register DefaultScript before BaseScript so they are ran first; FinalScripts run last
     script_instances += [x[1]() for x in classes if x[1].__bases__[0] == scripts.DefaultScript]
     script_instances += [x[1]() for x in classes if x[1].__bases__[0] == scripts.BaseScript]
+    script_instances += [x[1]() for x in classes if x[1].__bases__[0] == scripts.FinalScript]
     logging.debug(f"all scripts: {script_instances}")
-    # Find and Start any default scripts
-    default_script_instances = [x[1]() for x in classes if x[1].__bases__[0] is scripts.DefaultScript]
+    # Find and Start any default and final scripts
+    default_script_instances = [x[1]() for x in classes if x[1].__bases__[0] in [scripts.DefaultScript, scripts.FinalScript]]
     logging.debug(f"default scripts: {default_script_instances}")
     for default_script in default_script_instances:
-        if default_script.__class__.__name__ != scripts.DefaultScript.__name__:
+        if default_script.__class__.__name__ not in [scripts.DefaultScript.__name__, scripts.FinalScript.__name__]:
             CL_StartScript(default_script.__class__.__name__)
 
 
