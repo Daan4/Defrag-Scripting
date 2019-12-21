@@ -1,10 +1,12 @@
 # Data container classes to mirror the C structs
-
-
 class BaseStruct:
     def __iter__(self):
         for _, v in self.__dict__.items():
-            yield v
+            if isinstance(v, list):
+                for x in v:
+                    yield x
+            else:
+                yield v
 
     def __repr__(self):
         return " ".join([str(v) for _, v in self.__dict__.items()])
@@ -21,7 +23,7 @@ class usercmd_t(BaseStruct):
         self.upmove = upmove
 
 
-class playerstate_t(BaseStruct):
+class playerState_t(BaseStruct):
     def __init__(self, *args):
         self.command_time = args[0]
         self.pm_type = args[1]

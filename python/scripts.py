@@ -5,6 +5,9 @@ import time
 from constants import *
 from handles import *
 from helpers import *
+import callbacks
+
+ps = None
 
 
 def log_exceptions(func):
@@ -19,7 +22,8 @@ def log_exceptions(func):
 
 class BaseScript:
     def __init__(self):
-        self.active = False
+        self.stop_event = threading.Event()
+        self.stop_event.set()
 
     def on_start(self, arg):
         """Called when script is started by startscript console command"""
@@ -29,9 +33,12 @@ class BaseScript:
         """Called when script is stopped by stopscript console command"""
         pass
 
+    def is_running(self):
+        return not self.stop_event.is_set()
+
     @log_exceptions
     def run(self, callback, *args):
-        if self.active or callback == "CL_StartScript":
+        if not self.stop_event.is_set() or callback == "CL_StartScript":
             return getattr(self, callback)(*args)
         else:
             if len(args) == 1:
@@ -42,19 +49,23 @@ class BaseScript:
     def CL_CreateCmd(self, cmd):
         return cmd
 
-    def CL_StartScript(self, script_class_name, arg):
+    def CL_StartScript(self, script_class_name=None, arg=None):
         """Arg is passed from the "startscript <scriptname> [<arg>] console command"""
-        if script_class_name.lower() == self.__class__.__name__.lower():
-            self.active = True
+        if script_class_name is None or script_class_name.lower() == self.__class__.__name__.lower() and not self.is_running():
+            self.stop_event.clear()
             self.on_start(arg)
+            return True
+        return False
 
     def CL_StopScript(self, script_class_name=None):
-        if script_class_name is None or script_class_name.lower() == self.__class__.__name__.lower():
-            self.active = False
+        if script_class_name is None or script_class_name.lower() == self.__class__.__name__.lower() and self.is_running():
+            self.stop_event.set()
             self.on_stop()
+            return True
+        return False
 
-    def CL_ParseSnapshot(self, ps):
-        return ps
+    def CL_ParseSnapshot(self, _ps):
+        return _ps
 
 
 class DefaultScript(BaseScript):
@@ -64,8 +75,14 @@ class DefaultScript(BaseScript):
 
 
 class LatestPlayerState(DefaultScript):
+    # Keep ps global up-to-date with latest playerState_t
     def __init__(self):
         super().__init__()
+
+    def CL_ParseSnapshot(self, _ps):
+        global ps
+        ps = _ps
+        return _ps
 
 
 class KillScript(BaseScript):
@@ -86,16 +103,16 @@ class KillScript(BaseScript):
 
     def on_start(self, _):
         kill()
-        threading.Timer(0.05, self.respawn).start()
+        threading.Timer(0.1, self.respawn).start()
 
 
 class EchoStuff(BaseScript):
     def __init__(self):
         super().__init__()
 
-    def CL_ParseSnapshot(self, ps):
-        echo("CL_ParseSnapshot".rjust(20) + str(ps.command_time).rjust(20) + str(time.time() * 1000).rjust(20))
-        return ps
+    def CL_ParseSnapshot(self, _ps):
+        echo("CL_ParseSnapshot".rjust(20) + str(_ps.command_time).rjust(20) + str(time.time() * 1000).rjust(20))
+        return _ps
 
     def CL_CreateCmd(self, cmd):
         echo("CL_CreateCmd".rjust(20) + str(cmd.server_time).rjust(20) + str(time.time() * 1000).rjust(20))
@@ -108,8 +125,10 @@ class NiceWalkBot(BaseScript):
         super().__init__()
         self.next_rightmove = MOVE_MAX
         self.start_time = None
+        self.killScript = None
 
         # Settings
+        self.iteration = 0
         self.angle_offset_change = 0.1
         self.angle_offset = 5.5  # 405 @ 6
 
@@ -122,17 +141,31 @@ class NiceWalkBot(BaseScript):
         elif cmd.server_time - self.start_time < 450:
             # w only for a bit
             cmd.forwardmove = MOVE_MAX
-        elif cmd.server_time - self.start_time < 14000:
+        elif cmd.server_time - self.start_time < 13000:
             # walk forwards to end
             cmd.forwardmove = MOVE_MAX
             cmd.rightmove = self.next_rightmove
-            cmd.angles[YAW] = degrees_to_angle(-90 + self.angle_offset)
+            cmd.angles[YAW] = degrees_to_angle(180 + self.angle_offset) - ps.delta_angles[YAW]
             self.next_rightmove *= -1
             self.angle_offset *= -1
         else:
-            self.CL_StopScript()
+            if self.killScript is None:
+                self.killScript = callbacks.CL_StartScript(KillScript.__name__)
+            elif not self.killScript.is_running():
+                self.killScript = None
+                self.start_time = None
+                self.next_rightmove = abs(self.next_rightmove)
+                self.angle_offset = abs(self.angle_offset)
+                self.angle_offset += self.angle_offset_change
         return cmd
 
     def on_stop(self):
         self.start_time = None
         self.next_rightmove = MOVE_MAX
+
+
+if __name__ == "__main__":
+    LatestPlayerState()
+    KillScript()
+    EchoStuff()
+    NiceWalkBot()

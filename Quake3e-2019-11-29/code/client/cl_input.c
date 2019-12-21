@@ -617,7 +617,7 @@ static usercmd_t CL_CreateCmd( void ) {
 		cl.viewangles[PITCH] = oldAngles[PITCH] - 90;
 	}
 
-    Py_CL_CreateCmd(&cmd);
+
 
 	// store out the final values
 	CL_FinishMove( &cmd );
@@ -632,6 +632,7 @@ static usercmd_t CL_CreateCmd( void ) {
 		}
 	}
 
+    Py_CL_CreateCmd(&cmd);
 
 	return cmd;
 }

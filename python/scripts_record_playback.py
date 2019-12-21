@@ -1,5 +1,6 @@
 import csv
 from scripts import BaseScript
+from structs import usercmd_t
 
 
 class DemoRecorder(BaseScript):
@@ -45,3 +46,9 @@ class UsercmdReplay(BaseScript):
 
     def on_stop(self):
         self.csv_reader = None
+
+
+if __name__ == "__main__":
+    DemoRecorder()
+    UsercmdRecord()
+    UsercmdReplay()
