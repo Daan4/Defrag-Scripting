@@ -2,3 +2,6 @@
 # Don't copy this file to the build folder
 def Py_Cbuf_ExecuteText(*args, **kwargs):
     pass
+
+def Py_GetPredictedPlayerstate(*args, **kwargs):
+    pass

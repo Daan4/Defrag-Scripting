@@ -3,7 +3,7 @@ import logging
 import threading
 import time
 from constants import *
-from handles import *
+from handles import echo, kill, get_predicted_playerstate
 from helpers import do, stop, degrees_to_angle
 
 ps = None
@@ -67,12 +67,24 @@ class BaseScript:
 
 class DefaultScript(BaseScript):
     # Same as BaseScript, but any class inheriting this will be started by CL_Init
+    # Default scripts also get called first (in the order of declaration), before any of the other registered scripts.
     def __init__(self):
         super().__init__()
 
 
+class CommandTimeModifier(DefaultScript):
+    """Modifies cmd.server_time to predictedplayerstate.command_time + 8"""
+    def __init__(self):
+        super().__init__()
+
+    def CL_CreateCmd(self, cmd):
+        pps = get_predicted_playerstate()
+        if pps is not None:
+            cmd.server_time = pps.command_time + 8
+        return cmd
+
 class LatestPlayerState(DefaultScript):
-    # Keep ps global up-to-date with latest playerState_t
+    """Keep ps global up-to-date with latest playerState_t"""
     def __init__(self):
         super().__init__()
 

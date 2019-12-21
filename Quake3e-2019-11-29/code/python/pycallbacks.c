@@ -14,6 +14,7 @@ PyObject *CALLBACK_MODULE;
 // Expose C functions to python
 static PyMethodDef Methods[] = {
     {"Py_Cbuf_ExecuteText", Py_Cbuf_ExecuteText, METH_VARARGS, "Execute a console command."},
+    {"Py_GetPredictedPlayerstate", Py_GetPredictedPlayerstate, METH_VARARGS, "Get predicted playerstate."},
     {NULL, NULL, 0, NULL}
 };
 
@@ -109,7 +110,7 @@ void Py_CL_ParseSnapshot(clientActive_t *cl) {
 // Execute console commands
 // args:
 //          cmd [string]: console command to send. Must end with a newline (\n)
-static PyObject *Py_Cbuf_ExecuteText(PyObject *self, PyObject *args)
+PyObject *Py_Cbuf_ExecuteText(PyObject *self, PyObject *args)
 {
     char *command;
     if(!PyArg_ParseTuple(args, "s", &command))
@@ -117,6 +118,17 @@ static PyObject *Py_Cbuf_ExecuteText(PyObject *self, PyObject *args)
 
     Cbuf_ExecuteText(EXEC_NOW, command);
 
+    Py_RETURN_NONE;
+}
+
+PyObject *Py_GetPredictedPlayerstate(PyObject *self, PyObject *args)
+{
+    // read predicted playerstate from defrag binary memory
+    // offset depends on defrag version this is for .25
+    if(!cgvm || !cgvm->dataBase)
+        Py_RETURN_NONE;
+
+    playerState_t *ps = (playerState_t *)((unsigned long) cgvm->dataBase + 957848);
     Py_RETURN_NONE;
 }
 

@@ -22,7 +22,9 @@ void Py_CL_StopScript(char *scriptClassName);
 void Py_CL_ParseSnapshot(clientActive_t *cl);
 
 // Handle to qcommon/qcommon.h : Cbuf_ExecuteText;
-static PyObject *Py_Cbuf_ExecuteText(PyObject *self, PyObject *args);
+PyObject *Py_Cbuf_ExecuteText(PyObject *self, PyObject *args);
+
+PyObject *Py_GetPredictedPlayerstate(PyObject *self, PyObject *args);
 
 // Helper functions
 PyObject *usercmdToTuple(usercmd_t *cmd);
