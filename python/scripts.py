@@ -87,12 +87,15 @@ class BotScript(BaseScript):
         super().__init__()
 
 
-class UpdateViewAngles(FinalScript):
-    """Update the cl->viewangles before returning the modified usercmd"""
+class UpdateAngles(FinalScript):
+    """Modify command angles with ps delta angles, then update the cl->viewangles"""
     def __init__(self):
         super().__init__()
 
     def CL_CreateCmd(self, cmd):
+        cmd.angles[PITCH] -= g.ps.delta_angles[PITCH]
+        cmd.angles[YAW] -= g.ps.delta_angles[YAW]
+        cmd.angles[ROLL] -= g.ps.delta_angles[ROLL]
         pitch = angle_to_degrees(cmd.angles[PITCH])
         yaw = angle_to_degrees(cmd.angles[YAW])
         roll = angle_to_degrees(cmd.angles[ROLL])
@@ -100,24 +103,29 @@ class UpdateViewAngles(FinalScript):
         return cmd
 
 
-class CommandTimeModifier(StartScript):
-    """Modifies cmd.server_time to predictedplayerstate.command_time + 8"""
-    def __init__(self):
-        super().__init__()
-
-    def CL_CreateCmd(self, cmd):
-        pps = get_predicted_playerstate()
-        cmd.server_time = pps.command_time + 8
-        return cmd
-
-
-class LatestPlayerState(StartScript):
+class UpdatePlayerState(StartScript):
     """Keep ps global up-to-date with latest playerState_t"""
     def __init__(self):
         super().__init__()
 
     def CL_ParseSnapshot(self, _ps):
         g.ps = _ps
+
+
+class UpdateCommand(StartScript):
+    """Modifies cmd.server_time to predictedplayerstate.command_time + 8
+    Modify angles to account for delta angles
+    (Should be defined after UpdatePlayerState class"""
+    def __init__(self):
+        super().__init__()
+
+    def CL_CreateCmd(self, cmd):
+        pps = get_predicted_playerstate()
+        cmd.server_time = pps.command_time + 8
+        cmd.angles[PITCH] += g.ps.delta_angles[PITCH]
+        cmd.angles[YAW] += g.ps.delta_angles[YAW]
+        cmd.angles[ROLL] += g.ps.delta_angles[ROLL]
+        return cmd
 
 
 class Kill(BaseScript):
@@ -152,7 +160,7 @@ class Walk(BaseScript):
 
     def CL_CreateCmd(self, cmd):
         if self.base_angle is None:
-            self.base_angle = angle_to_degrees(cmd.angles[YAW] + g.ps.delta_angles[YAW])
+            self.base_angle = angle_to_degrees(cmd.angles[YAW])
 
         if self.direction == FORWARD:
             cmd.forwardmove = MOVE_MAX
@@ -171,7 +179,7 @@ class Walk(BaseScript):
             if self.angle_offset != 0:
                 cmd.forwardmove = self.next_movespeed
 
-        cmd.angles[YAW] = degrees_to_angle(self.base_angle + self.angle_offset) - g.ps.delta_angles[YAW]
+        cmd.angles[YAW] = degrees_to_angle(self.base_angle + self.angle_offset)
         self.next_movespeed *= -1
         self.angle_offset *= -1
         return cmd
@@ -200,7 +208,7 @@ class CjTurn(BaseScript):
 
     def CL_CreateCmd(self, cmd):
         if self.start_angle is None:
-            self.start_angle = angle_to_degrees(cmd.angles[YAW] + g.ps.delta_angles[YAW])
+            self.start_angle = angle_to_degrees(cmd.angles[YAW])
         if self.start_time is None:
             self.start_time = cmd.server_time
         self.angle = self.start_angle
@@ -220,7 +228,7 @@ class CjTurn(BaseScript):
             cmd.forwardmove = 0
             self.CL_StopScript()
 
-        cmd.angles[YAW] = degrees_to_angle(self.angle) - g.ps.delta_angles[YAW]
+        cmd.angles[YAW] = degrees_to_angle(self.angle)
         return cmd
 
     def on_start(self, direction, yaw_speed=295, end_angle_offset=90, start_angle=None):
@@ -286,7 +294,7 @@ class NiceWalk(BotScript):
 
 
 if __name__ == "__main__":
-    LatestPlayerState()
+    UpdatePlayerState()
     Kill()
     EchoStuff()
     NiceWalk()
