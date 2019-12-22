@@ -69,21 +69,16 @@ class BaseScript:
 class DefaultScript(BaseScript):
     # Same as BaseScript, but any class inheriting this will be started by CL_Init
     # Default scripts also get called first (in the order of declaration), before any of the other registered scripts.
-    def __init__(self):
-        super().__init__()
+    pass
 
 
 class FinalScript(DefaultScript):
     # Same as DefaultScript, except these get called last (in the order of declaration) after any of the other registered scripts.
-    def __init__(self):
-        super().__init__()
+    pass
 
 
 class UpdateViewAngles(FinalScript):
     """Update the cl->viewangles before returning the modified usercmd"""
-    def __init__(self):
-        super().__init__()
-
     def CL_CreateCmd(self, cmd):
         pitch = angle_to_degrees(cmd.angles[PITCH])
         yaw = angle_to_degrees(cmd.angles[YAW])
@@ -94,9 +89,6 @@ class UpdateViewAngles(FinalScript):
 
 class CommandTimeModifier(DefaultScript):
     """Modifies cmd.server_time to predictedplayerstate.command_time + 8"""
-    def __init__(self):
-        super().__init__()
-
     def CL_CreateCmd(self, cmd):
         pps = get_predicted_playerstate()
         if pps is not None:
@@ -106,9 +98,6 @@ class CommandTimeModifier(DefaultScript):
 
 class LatestPlayerState(DefaultScript):
     """Keep ps global up-to-date with latest playerState_t"""
-    def __init__(self):
-        super().__init__()
-
     def CL_ParseSnapshot(self, _ps):
         global ps
         ps = _ps
@@ -116,10 +105,6 @@ class LatestPlayerState(DefaultScript):
 
 class Kill(BaseScript):
     # Combines /kill and +attack to respawn
-    def __init__(self):
-        super().__init__()
-        self.shoot = False
-
     def CL_CreateCmd(self, cmd):
         if self.shoot:
             cmd.buttons |= BUTTON_ATTACK
@@ -227,9 +212,6 @@ class CjTurn(BaseScript):
 
 
 class EchoStuff(BaseScript):
-    def __init__(self):
-        super().__init__()
-
     def CL_ParseSnapshot(self, ps):
         echo("CL_ParseSnapshot".rjust(20) + str(ps.command_time).rjust(20) + str(time.time() * 1000).rjust(20))
 
