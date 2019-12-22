@@ -3,7 +3,6 @@ import logging
 from structs import usercmd_t, playerState_t
 import sys
 import inspect
-from handles import echo
 
 # import any files containing scripts.
 # the module names should also be in the global constant SCRIPT_MODULES
@@ -19,6 +18,15 @@ SCRIPT_FILES = ["scripts", "scripts_record_playback"]
 script_instances = []
 
 
+def getScriptInstances(classes, script_class, start=False):
+    """Find and optionally start classes with script_class as their base class"""
+    instances = [x[1]() for x in classes if x[1].__bases__[0] == script_class]
+    if start:
+        for instance in instances:
+            CL_StartScript(instance.__class__.__name__)
+    return instances
+
+
 # unused atm but might as well leave it in
 def CL_InitCGame():
     pass
@@ -28,24 +36,18 @@ def CL_Init():
     os.makedirs(os.path.dirname(DEBUG_LOG_FILENAME), exist_ok=True)
     logging.basicConfig(filename=DEBUG_LOG_FILENAME, filemode='w', format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG, datefmt="%Y-%m-%d %H:%M:%S")
 
-    # Populate script_classes via inspection of scripts.py
-    # Add any class which has BaseScript as a base class
+    # Populate script_instances via inspection of python script files
     global script_instances
     classes = []
-
     for file in SCRIPT_FILES:
         classes += inspect.getmembers(sys.modules[file], inspect.isclass)
-    # Register DefaultScript before BaseScript so they are ran first; FinalScripts run last
-    script_instances += [x[1]() for x in classes if x[1].__bases__[0] == scripts.DefaultScript]
-    script_instances += [x[1]() for x in classes if x[1].__bases__[0] == scripts.BaseScript]
-    script_instances += [x[1]() for x in classes if x[1].__bases__[0] == scripts.FinalScript]
-    logging.debug(f"all scripts: {script_instances}")
-    # Find and Start any default and final scripts
-    default_script_instances = [x[1]() for x in classes if x[1].__bases__[0] in [scripts.DefaultScript, scripts.FinalScript]]
-    logging.debug(f"default scripts: {default_script_instances}")
-    for default_script in default_script_instances:
-        if default_script.__class__.__name__ not in [scripts.DefaultScript.__name__, scripts.FinalScript.__name__]:
-            CL_StartScript(default_script.__class__.__name__)
+    # Order of adding to script_instances is the callback execution order
+    # Order: StartScript, BotScript, BaseScript, FinalScript
+    script_instances = []
+    script_instances += getScriptInstances(classes, scripts.StartScript, True)
+    script_instances += getScriptInstances(classes, scripts.BotScript)
+    script_instances += getScriptInstances(classes, scripts.BaseScript)
+    script_instances += getScriptInstances(classes, scripts.FinalScript, True)
 
 
 def CL_CreateCmd(*args):

@@ -35,10 +35,10 @@ class BaseScript:
 
     @log_exceptions
     def run(self, callback, *args):
-        if self.running or callback == "CL_StartScript":
+        if self.running or callback == self.CL_StartScript.__name__:
             return getattr(self, callback)(*args)
-        elif callback == "CL_StopScript":
-            return False
+        elif callback == self.CL_StopScript.__name__:
+            return False  # If already running CL_StopScript calls should be returning False
         else:
             if len(args) == 1:
                 return args[0]
@@ -49,6 +49,9 @@ class BaseScript:
         return cmd
 
     def CL_StartScript(self, script_class_name=None, *args):
+        if self.__class__.__name__ == "LatestPlayerState":
+            logging.debug(f"{self.__class__.__name__} startscript, {script_class_name}")
+
         if script_class_name is None or script_class_name.lower() == self.__class__.__name__.lower() and not self.running:
             self.on_start(*args)
             self.running = True
@@ -66,19 +69,34 @@ class BaseScript:
         pass
 
 
-class DefaultScript(BaseScript):
-    # Same as BaseScript, but any class inheriting this will be started by CL_Init
-    # Default scripts also get called first (in the order of declaration), before any of the other registered scripts.
-    pass
+class StartScript(BaseScript):
+    """Same as BaseScript, but any class inheriting this will be started by CL_Init
+    Default scripts also get called first, before any of the other registered scripts.
+    """
+    def __init__(self):
+        super().__init__()
 
 
-class FinalScript(DefaultScript):
-    # Same as DefaultScript, except these get called last (in the order of declaration) after any of the other registered scripts.
-    pass
+class FinalScript(BaseScript):
+    """Same as StartScript, except these get called last after any of the other registered scripts.
+    """
+    def __init__(self):
+        super().__init__()
+
+
+class BotScript(BaseScript):
+    """Same as BaseScript, but these are called before BaseScripts
+    This allows any BaseScript started in a BotScript to start in the same frame.
+    """
+    def __init__(self):
+        super().__init__()
 
 
 class UpdateViewAngles(FinalScript):
     """Update the cl->viewangles before returning the modified usercmd"""
+    def __init__(self):
+        super().__init__()
+
     def CL_CreateCmd(self, cmd):
         pitch = angle_to_degrees(cmd.angles[PITCH])
         yaw = angle_to_degrees(cmd.angles[YAW])
@@ -87,8 +105,11 @@ class UpdateViewAngles(FinalScript):
         return cmd
 
 
-class CommandTimeModifier(DefaultScript):
+class CommandTimeModifier(StartScript):
     """Modifies cmd.server_time to predictedplayerstate.command_time + 8"""
+    def __init__(self):
+        super().__init__()
+
     def CL_CreateCmd(self, cmd):
         pps = get_predicted_playerstate()
         if pps is not None:
@@ -96,8 +117,11 @@ class CommandTimeModifier(DefaultScript):
         return cmd
 
 
-class LatestPlayerState(DefaultScript):
+class LatestPlayerState(StartScript):
     """Keep ps global up-to-date with latest playerState_t"""
+    def __init__(self):
+        super().__init__()
+
     def CL_ParseSnapshot(self, _ps):
         global ps
         ps = _ps
@@ -105,6 +129,10 @@ class LatestPlayerState(DefaultScript):
 
 class Kill(BaseScript):
     # Combines /kill and +attack to respawn
+    def __init__(self):
+        super().__init__()
+        self.shoot = False
+
     def CL_CreateCmd(self, cmd):
         if self.shoot:
             cmd.buttons |= BUTTON_ATTACK
@@ -212,15 +240,18 @@ class CjTurn(BaseScript):
 
 
 class EchoStuff(BaseScript):
-    def CL_ParseSnapshot(self, ps):
-        echo("CL_ParseSnapshot".rjust(20) + str(ps.command_time).rjust(20) + str(time.time() * 1000).rjust(20))
+    def __init__(self):
+        super().__init__()
+
+    def CL_ParseSnapshot(self, _ps):
+        echo("CL_ParseSnapshot".rjust(20) + str(_ps.command_time).rjust(20) + str(time.time() * 1000).rjust(20))
 
     def CL_CreateCmd(self, cmd):
         echo("CL_CreateCmd".rjust(20) + str(cmd.server_time).rjust(20) + str(time.time() * 1000).rjust(20))
         return cmd
 
 
-class NiceWalkBot(BaseScript):
+class NiceWalk(BotScript):
     # nicewalk-nowall bot
     def __init__(self):
         super().__init__()
@@ -251,7 +282,6 @@ class NiceWalkBot(BaseScript):
                 do(Walk, FORWARD, None, 6)
         else:
             stop(Walk)
-            #do(Kill)
             self.CL_StopScript()
         self.prev_diff = diff
         return cmd
@@ -266,4 +296,4 @@ if __name__ == "__main__":
     LatestPlayerState()
     Kill()
     EchoStuff()
-    NiceWalkBot()
+    NiceWalk()
