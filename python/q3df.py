@@ -12,3 +12,7 @@ def Py_GetPredictedPlayerstate(*args, **kwargs):
 
 def Py_UpdateViewangles(*args, **kwargs):
     pass
+
+
+def Py_TestFunction(*args, **kwargs):
+    pass

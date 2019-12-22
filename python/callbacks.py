@@ -4,6 +4,7 @@ from structs import usercmd_t, playerState_t
 import sys
 import inspect
 import g
+from handles import test
 
 # import any files containing scripts.
 # the module names should also be in the global constant SCRIPT_MODULES
@@ -44,6 +45,10 @@ def CL_Init():
     g.script_instances += getScriptInstances(classes, scripts.BotScript)
     g.script_instances += getScriptInstances(classes, scripts.BaseScript)
     g.script_instances += getScriptInstances(classes, scripts.FinalScript, True)
+
+    # run test function for C debugging purposes
+    # implement Py_TestFunction in c and the return value will be logged
+    # test()
 
 
 def CL_CreateCmd(*args):

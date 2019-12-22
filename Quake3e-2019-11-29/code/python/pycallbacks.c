@@ -16,6 +16,7 @@ static PyMethodDef Methods[] = {
     {"Py_Cbuf_ExecuteText", Py_Cbuf_ExecuteText, METH_VARARGS, "Execute a console command."},
     {"Py_GetPredictedPlayerstate", Py_GetPredictedPlayerstate, METH_VARARGS, "Get predicted playerstate."},
     {"Py_UpdateViewangles", Py_UpdateViewangles, METH_VARARGS, "Update cl->viewangles."},
+    {"Py_TestFunction", Py_TestFunction, METH_VARARGS, "Testing Function"},
     {NULL, NULL, 0, NULL}
 };
 
@@ -142,6 +143,14 @@ PyObject *Py_UpdateViewangles(PyObject *self, PyObject *args)
     cl.viewangles[2] = roll;
 
     Py_RETURN_NONE;
+}
+
+PyObject *Py_TestFunction(PyObject *self, PyObject *args)
+{
+    // Function that can be used for testing purposes
+    int angle_int = ANGLE2SHORT(0.1);
+    double angle_deg = SHORT2ANGLE(angle_int);
+    return PyFloat_FromDouble(angle_deg);
 }
 
 // CONVERTER FUNCTIONS

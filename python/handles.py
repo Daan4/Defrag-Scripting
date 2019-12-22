@@ -1,5 +1,6 @@
 import q3df
 from structs import playerState_t
+import logging
 
 
 def set_cl_viewangles(pitch, yaw, roll):
@@ -16,3 +17,7 @@ def echo(msg):
 
 def kill():
     q3df.Py_Cbuf_ExecuteText("kill\n")
+
+
+def test():
+    logging.debug(f"test result {q3df.Py_TestFunction()}")
