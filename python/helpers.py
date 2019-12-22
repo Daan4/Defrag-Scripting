@@ -3,12 +3,12 @@ import csv
 import g
 
 
-def do(script_class, *args):
+def do(script_class, *args, **kwargs):
     """Start a script and return the script instance
     Only start if the script is not already running"""
     from callbacks import CL_StartScript
     if not script_running(script_class):
-        return CL_StartScript(script_class.__name__, *args)
+        return CL_StartScript(script_class.__name__, *args, **kwargs)
     else:
         return None
 
@@ -31,7 +31,7 @@ def angle_to_degrees(angle):
 
 
 def degrees_to_angle(degrees):
-    return int((degrees * 65536/360)) & 65535
+    return int((degrees * 65536/360) + 0.5) & 65535
 
 
 def json_to_csv(jsonfile, csvfile):

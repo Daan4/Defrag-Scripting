@@ -51,17 +51,17 @@ def CL_Init():
     # test()
 
 
-def CL_CreateCmd(*args):
-    cmd = usercmd_t(*args)
+def CL_CreateCmd(*args, **kwargs):
+    cmd = usercmd_t(*args, **kwargs)
     for script in g.script_instances:
         cmd = script.run(CL_CreateCmd.__name__, cmd)
     return tuple(cmd)
 
 
-def CL_StartScript(script_class_name, *args):
+def CL_StartScript(script_class_name, *args, **kwargs):
     logging.debug(f"Starting script \"{script_class_name}\" with args \"{args}\"")
     for script in g.script_instances:
-        if script.run(CL_StartScript.__name__, script_class_name, *args):
+        if script.run(CL_StartScript.__name__, script_class_name, *args, **kwargs):
             return script
 
 
@@ -72,8 +72,8 @@ def CL_StopScript(script_class_name):
             return script
 
 
-def CL_ParseSnapshot(*args):
-    ps = playerState_t(*args)
+def CL_ParseSnapshot(*args, **kwargs):
+    ps = playerState_t(*args, **kwargs)
     for script in g.script_instances:
         script.run(CL_ParseSnapshot.__name__, ps)
 

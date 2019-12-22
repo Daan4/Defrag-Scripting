@@ -21,9 +21,10 @@ def log_exceptions(func):
 
 class BaseScript:
     def __init__(self):
-        self.running = False
+        self.running = False  # True if script is running
+        self.blocking_script_instance = None  # Reference to the instance
 
-    def on_start(self, *args):
+    def on_start(self, *args, **kwargs):
         """Called when script is started by startscript console command"""
         pass
 
@@ -32,9 +33,9 @@ class BaseScript:
         pass
 
     @log_exceptions
-    def run(self, callback, *args):
+    def run(self, callback, *args, **kwargs):
         if self.running or callback == self.CL_StartScript.__name__:
-            return getattr(self, callback)(*args)
+            return getattr(self, callback)(*args, **kwargs)
         elif callback == self.CL_StopScript.__name__:
             return False  # If already running CL_StopScript calls should be returning False
         else:
@@ -46,9 +47,9 @@ class BaseScript:
     def CL_CreateCmd(self, cmd):
         return cmd
 
-    def CL_StartScript(self, script_class_name=None, *args):
+    def CL_StartScript(self, script_class_name=None, *args, **kwargs):
         if script_class_name is None or script_class_name.lower() == self.__class__.__name__.lower() and not self.running:
-            self.on_start(*args)
+            self.on_start(*args, **kwargs)
             self.running = True
             return True
         return False
@@ -160,7 +161,7 @@ class Walk(BaseScript):
 
     def CL_CreateCmd(self, cmd):
         if self.base_angle is None:
-            self.base_angle = angle_to_degrees(cmd.angles[YAW])
+            self.base_angle = g.ps.view_angles[YAW]
 
         if self.direction == FORWARD:
             cmd.forwardmove = MOVE_MAX
@@ -187,8 +188,12 @@ class Walk(BaseScript):
     def on_start(self, direction, angle_deg=None, angle_offset_deg=0):
         self.base_angle = angle_deg
         self.angle_offset = angle_offset_deg
+        if self.angle_offset < 0:
+            # Start in reverse direction
+            self.next_movespeed = MOVE_MIN
+        else:
+            self.next_movespeed = MOVE_MAX
         self.direction = direction
-        self.next_movespeed = MOVE_MAX
 
 
 class CjTurn(BaseScript):
@@ -208,7 +213,7 @@ class CjTurn(BaseScript):
 
     def CL_CreateCmd(self, cmd):
         if self.start_angle is None:
-            self.start_angle = angle_to_degrees(cmd.angles[YAW])
+            self.start_angle = g.ps.view_angles[YAW]
         if self.start_time is None:
             self.start_time = cmd.server_time
         self.angle = self.start_angle
@@ -231,7 +236,7 @@ class CjTurn(BaseScript):
         cmd.angles[YAW] = degrees_to_angle(self.angle)
         return cmd
 
-    def on_start(self, direction, yaw_speed=295, end_angle_offset=90, start_angle=None):
+    def on_start(self, direction, end_angle_offset=90, start_angle=None, yaw_speed=295):
         self.yaw_speed = yaw_speed
         self.direction = direction
         self.start_angle = start_angle
@@ -264,12 +269,12 @@ class NiceWalk(BotScript):
         if self.start_time is None:
             self.start_time = cmd.server_time
         diff = cmd.server_time - self.start_time
-        if diff < 100:
+        if diff < 75:
             # walk backwards for a bit into the back wall
             do(Walk, BACKWARD)
         elif diff < 400:
             # walk forward up to at least 320 ups
-            if self.prev_diff < 100:
+            if self.prev_diff < 75:
                 stop(Walk)
             do(Walk, FORWARD, -180)
         elif diff < 13500:
@@ -277,10 +282,10 @@ class NiceWalk(BotScript):
                 stop(Walk)
             # cj turn into start trigger
             if self.turnScript is None:
-                self.turnScript = do(CjTurn, LEFT, 295, 120, 150)
+                self.turnScript = do(CjTurn, LEFT, 120, start_angle=150)
             if not self.turnScript.running:
                 # walk forwards to end
-                do(Walk, FORWARD, None, 6)
+                do(Walk, FORWARD, None, -6)
         else:
             stop(Walk)
             self.CL_StopScript()
