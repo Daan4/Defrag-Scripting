@@ -9,6 +9,11 @@ BACKWARD = 1
 LEFT = 2
 RIGHT = 3
 
+# axis enum
+X = 0
+Y = 1
+Z = 2
+
 # usercmd_t value limits
 MOVE_MAX = 127
 MOVE_MIN = -127

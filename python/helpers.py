@@ -2,6 +2,20 @@ import json
 import csv
 import g
 from math import sqrt
+import functools
+import logging
+
+
+# decorator to log exceptions that occur in the decorated function
+def log_exceptions(func):
+    @functools.wraps(func)
+    def inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception:
+            # Assumes that args[0] is self
+            logging.exception(f"Exception in {func.__name__}")
+    return inner
 
 
 def angle_to_degrees(angle):

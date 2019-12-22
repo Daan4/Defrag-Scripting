@@ -4,35 +4,51 @@ from structs import usercmd_t, playerState_t
 import sys
 import inspect
 import g
-from handles import test
+from helpers import log_exceptions
 
 # import any files containing scripts.
 # the module names should also be in the global constant SCRIPT_MODULES
-import scripts
+import scripts_base_classes
+import scripts_start
+import scripts_bot
+import scripts_base
+import scripts_final
 import scripts_record_playback
 
 DEBUG_LOG_FILENAME = "logs/output.log"
 
-SCRIPT_FILES = ["scripts", "scripts_record_playback"]
+SCRIPT_FILES = ["scripts_base_classes",
+                "scripts_start",
+                "scripts_bot",
+                "scripts_base",
+                "scripts_final",
+                "scripts_record_playback"]
 
 
 def getScriptInstances(classes, script_class, start=False):
-    """Find and optionally start classes with script_class as their base class"""
-    instances = [x[1]() for x in classes if x[1].__bases__[0] == script_class]
-    if start:
-        for instance in instances:
+    """Find and optionally start classes with script_class as their base class, except for base classes"""
+    instances = [x[1]() for x in classes if x[1].__bases__[0] == script_class and
+                 x[1].__name__ not in [scripts_base_classes.BaseScript.__name__,
+                                       scripts_base_classes.StartScript.__name__,
+                                       scripts_base_classes.BotScript.__name__,
+                                       scripts_base_classes.FinalScript.__name__]]
+
+    for instance in instances:
+        if instance.autostart:
             instance.CL_StartScript()
     return instances
 
 
 # unused atm but might as well leave it in
+@log_exceptions
 def CL_InitCGame():
     pass
 
 
+@log_exceptions
 def CL_Init():
     os.makedirs(os.path.dirname(DEBUG_LOG_FILENAME), exist_ok=True)
-    logging.basicConfig(filename=DEBUG_LOG_FILENAME, filemode='w', format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG, datefmt="%Y-%m-%d %H:%M:%S")
+    logging.basicConfig(filename=DEBUG_LOG_FILENAME, filemode='w', format='%(asctime)s.%(msecs)03d %(levelname)s %(message)s', level=logging.DEBUG, datefmt="%Y-%m-%d %H:%M:%S")
 
     # Populate script_instances via inspection of python script files
     classes = []
@@ -41,16 +57,17 @@ def CL_Init():
     # Order of adding to script_instances is the callback execution order
     # Order: StartScript, BotScript, BaseScript, FinalScript
     g.script_instances = []
-    g.script_instances += getScriptInstances(classes, scripts.StartScript, True)
-    g.script_instances += getScriptInstances(classes, scripts.BotScript)
-    g.script_instances += getScriptInstances(classes, scripts.BaseScript)
-    g.script_instances += getScriptInstances(classes, scripts.FinalScript, True)
+    g.script_instances += getScriptInstances(classes, scripts_base_classes.StartScript)
+    g.script_instances += getScriptInstances(classes, scripts_base_classes.BotScript)
+    g.script_instances += getScriptInstances(classes, scripts_base_classes.BaseScript)
+    g.script_instances += getScriptInstances(classes, scripts_base_classes.FinalScript)
 
     # run test function for C debugging purposes
     # implement Py_TestFunction in c and the return value will be logged
     # test()
 
 
+@log_exceptions
 def CL_CreateCmd(*args):
     cmd = usercmd_t(*args)
     for script in g.script_instances:
@@ -58,29 +75,22 @@ def CL_CreateCmd(*args):
     return tuple(cmd)
 
 
+@log_exceptions
 def CL_StartScript(script_class_name, *args, **kwargs):
     for script in g.script_instances:
-        if script.run(CL_StartScript.__name__, script_class_name, lambda: False, *args, **kwargs):
+        if script.run(CL_StartScript.__name__, script_class_name, None, *args, **kwargs):
             return script
 
 
+@log_exceptions
 def CL_StopScript(script_class_name):
     for script in g.script_instances:
         if script.run(CL_StopScript.__name__, script_class_name):
             return script
 
 
+@log_exceptions
 def CL_ParseSnapshot(*args):
     ps = playerState_t(*args)
     for script in g.script_instances:
         script.run(CL_ParseSnapshot.__name__, ps)
-
-
-if __name__ == "__main__":
-    DEBUG_LOG_FILENAME = "../" + DEBUG_LOG_FILENAME
-    CL_InitCGame()
-    CL_Init()
-    CL_StartScript("nicewalkbot")
-    CL_StopScript("nicewalkbot")
-    CL_CreateCmd(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    CL_ParseSnapshot(*list(range(117)))

@@ -72,7 +72,11 @@ class playerState_t(BaseStruct):
         self.damage_pitch = args[44]
         self.damage_count = args[45]
 
+        # stats[13] is usercmd_t in demoes? to be verified
+        # stats[12] is timer running verify
+        # stats[7] + stats[8] is current time (sec/ms?) verify
         self.stats = []
+
         self.persistant = []
         self.powerups = []
         self.ammo = []
