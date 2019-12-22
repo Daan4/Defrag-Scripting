@@ -9,6 +9,10 @@ BACKWARD = 1
 LEFT = 2
 RIGHT = 3
 
+# stats enum
+# stats[12] starts at 512 and increments by 8 every time a trigger is hit
+TIMER_CP_HIT = 12
+
 # axis enum
 X = 0
 Y = 1

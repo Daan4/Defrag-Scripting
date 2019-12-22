@@ -28,9 +28,11 @@ class EchoStuff(FinalScript):
         self.autostart = False
 
     def CL_ParseSnapshot(self, _ps):
-        echo(self.CL_ParseSnapshot.__name__.rjust(20) + str(_ps.command_time).rjust(20) + str(time.time() * 1000).rjust(20))
+        #echo(self.CL_ParseSnapshot.__name__.rjust(20) + str(_ps.command_time).rjust(20) + str(time.time() * 1000).rjust(20))
+        echo(str(_ps.stats[12]))
+        # 512 -> 518 -> 524
 
     def CL_CreateCmd(self, cmd):
-        echo(self.CL_CreateCmd.__name__.rjust(20) + str(cmd.server_time).rjust(20) + str(time.time() * 1000).rjust(20))
+        #echo(self.CL_CreateCmd.__name__.rjust(20) + str(cmd.server_time).rjust(20) + str(time.time() * 1000).rjust(20))
         return cmd
 

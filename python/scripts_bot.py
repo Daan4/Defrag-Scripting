@@ -14,4 +14,4 @@ class NiceWalk(BotScript):
         self.add_script(Walk, lambda: g.ps.origin[Y] >= 455, BACKWARD)
         self.add_script(Walk, lambda: get_speed() == 320, FORWARD, -180)
         self.add_script(CjTurn, None, LEFT, 120, 150)
-        self.add_script(Walk, lambda: get_speed() == 0, FORWARD, angle_offset_deg=-6)
+        self.add_script(Walk, lambda: g.ps.stats[TIMER_CP_HIT] == 524, FORWARD, angle_offset_deg=-6)
