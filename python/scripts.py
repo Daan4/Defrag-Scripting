@@ -4,7 +4,7 @@ import threading
 import time
 from constants import *
 from handles import echo, kill, get_predicted_playerstate, set_cl_viewangles
-from helpers import do, stop, degrees_to_angle, angle_to_degrees
+from helpers import degrees_to_angle, angle_to_degrees, get_speed
 import g
 
 
@@ -15,14 +15,18 @@ def log_exceptions(func):
         try:
             return func(*args, **kwargs)
         except Exception:
-            logging.exception(f"Exception in {func.__name__}")
+            # Assumes that args[0] is self
+            logging.exception(f"Exception in {args[0].__class__.__name__}")
     return inner
 
 
 class BaseScript:
     def __init__(self):
         self.running = False  # True if script is running
-        self.blocking_script_instance = None  # Reference to the instance
+        self.waiting = False  # True if script is waiting
+        self.prev_waiting = False  # Waiting state of previous frame, used to detect script finish in the callback
+        self.wait_script = None  # Instance of the script that the current script is waiting on, or None
+        self.stop_condition = None  # A function which auto-stops the script if it evaluates to True
 
     def on_start(self, *args, **kwargs):
         """Called when script is started by startscript console command"""
@@ -32,31 +36,77 @@ class BaseScript:
         """Called when script is stopped by stopscript console command"""
         pass
 
+    def do(self, script_class, stop_condition=lambda: False, *args, **kwargs):
+        """Start another script, and if a stop_condition is given wait for it to finish."""
+        for instance in g.script_instances:
+            if script_class is instance.__class__:
+                if stop_condition is not None:
+                    self.wait(instance)
+                instance.CL_StartScript(script_class.__name__, stop_condition, *args, **kwargs)
+                return instance
+
+    def wait(self, instance):
+        self.wait_script = instance
+        self.prev_waiting = self.waiting
+        self.waiting = True
+
+    def wait_done(self):
+        """Can be called to check if the wait finished this frame"""
+        return self.prev_waiting and not self.waiting
+
+
+    def on_wait(self):
+        if not self.wait_script.running:
+            self.wait_script = None
+            self.prev_waiting = self.waiting
+            self.waiting = False
+
     @log_exceptions
     def run(self, callback, *args, **kwargs):
-        if self.running or callback == self.CL_StartScript.__name__:
-            return getattr(self, callback)(*args, **kwargs)
-        elif callback == self.CL_StopScript.__name__:
-            return False  # If already running CL_StopScript calls should be returning False
-        else:
-            if len(args) == 1:
-                return args[0]
+        if self.waiting:
+            self.on_wait()
+
+        if callback == self.CL_StartScript.__name__:
+            return self.CL_StartScript(*args, **kwargs)
+        elif self.running and not self.waiting:
+            if not self.stop_condition():
+                # Fire the callback
+                return getattr(self, callback)(*args, **kwargs)
             else:
-                return args
+                self.CL_StopScript()
+        elif self.waiting and callback == self.CL_StopScript.__name__:
+            # Still allow script to be stopped while waiting
+            return self.CL_StopScript(*args, **kwargs)
+
+        # Return the original args if the callback wasn't fired
+        if len(args) == 1:
+            return args[0]
+        else:
+            return args
 
     def CL_CreateCmd(self, cmd):
         return cmd
 
-    def CL_StartScript(self, script_class_name=None, *args, **kwargs):
-        if script_class_name is None or script_class_name.lower() == self.__class__.__name__.lower() and not self.running:
+    def CL_StartScript(self, script_class_name=None, stop_condition=lambda: False, *args, **kwargs):
+        if script_class_name is None:
+            script_class_name = self.__class__.__name__
+        if script_class_name.lower() == self.__class__.__name__.lower() and not self.running:
+            logging.debug(f"Starting script \"{script_class_name}\" with args \"{args}\" and kwargs \"{kwargs}\"")
             self.on_start(*args, **kwargs)
+            self.stop_condition = stop_condition
             self.running = True
             return True
         return False
 
     def CL_StopScript(self, script_class_name=None):
-        if script_class_name is None or script_class_name.lower() == self.__class__.__name__.lower() and self.running:
+        if script_class_name is None:
+            script_class_name = self.__class__.__name__
+        if script_class_name.lower() == self.__class__.__name__.lower() and self.running:
+            logging.debug(f"Stopping script \"{script_class_name}\"")
             self.on_stop()
+            self.wait_script = None
+            self.waiting = False
+            self.prev_waiting = False
             self.running = False
             return True
         return False
@@ -261,41 +311,38 @@ class NiceWalk(BotScript):
     # nicewalk-nowall bot
     def __init__(self):
         super().__init__()
-        self.start_time = None
-        self.prev_diff = None
-        self.turnScript = None
 
     def CL_CreateCmd(self, cmd):
-        if self.start_time is None:
-            self.start_time = cmd.server_time
-        diff = cmd.server_time - self.start_time
-        if diff < 75:
-            # walk backwards for a bit into the back wall
-            do(Walk, BACKWARD)
-        elif diff < 400:
-            # walk forward up to at least 320 ups
-            if self.prev_diff < 75:
-                stop(Walk)
-            do(Walk, FORWARD, -180)
-        elif diff < 13500:
-            if self.prev_diff < 400:
-                stop(Walk)
-            # cj turn into start trigger
-            if self.turnScript is None:
-                self.turnScript = do(CjTurn, LEFT, 120, start_angle=150)
-            if not self.turnScript.running:
-                # walk forwards to end
-                do(Walk, FORWARD, None, -6)
-        else:
-            stop(Walk)
+        if self.wait_done():
             self.CL_StopScript()
-        self.prev_diff = diff
+        else:
+            self.do(Walk, lambda: get_speed() >= 300, FORWARD)
         return cmd
 
-    def on_stop(self):
-        self.start_time = None
-        self.turnScript = None
-        stop(Walk)
+        # if self.start_time is None:
+        #     self.start_time = cmd.server_time
+        # diff = cmd.server_time - self.start_time
+        # if diff < 75:
+        #     # walk backwards for a bit into the back wall
+        #     do(Walk, BACKWARD)
+        # elif diff < 400:
+        #     # walk forward up to at least 320 ups
+        #     if self.prev_diff < 75:
+        #         stop(Walk)
+        #     do(Walk, FORWARD, -180)
+        # elif diff < 13500:
+        #     if self.prev_diff < 400:
+        #         stop(Walk)
+        #     # cj turn into start trigger
+        #     if not self.turned:
+        #         do(CjTurn, LEFT, 120, start_angle=150)
+        #         return cmd
+        #     do(Walk, FORWARD, None, -6)
+        # else:
+        #     stop(Walk)
+        #     self.CL_StopScript()
+        # self.prev_diff = diff
+        # return cmd
 
 
 if __name__ == "__main__":

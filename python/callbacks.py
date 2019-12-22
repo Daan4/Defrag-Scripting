@@ -21,7 +21,7 @@ def getScriptInstances(classes, script_class, start=False):
     instances = [x[1]() for x in classes if x[1].__bases__[0] == script_class]
     if start:
         for instance in instances:
-            instance.CL_StartScript(instance.__class__.__name__)
+            instance.CL_StartScript()
     return instances
 
 
@@ -51,29 +51,27 @@ def CL_Init():
     # test()
 
 
-def CL_CreateCmd(*args, **kwargs):
-    cmd = usercmd_t(*args, **kwargs)
+def CL_CreateCmd(*args):
+    cmd = usercmd_t(*args)
     for script in g.script_instances:
         cmd = script.run(CL_CreateCmd.__name__, cmd)
     return tuple(cmd)
 
 
 def CL_StartScript(script_class_name, *args, **kwargs):
-    logging.debug(f"Starting script \"{script_class_name}\" with args \"{args}\"")
     for script in g.script_instances:
-        if script.run(CL_StartScript.__name__, script_class_name, *args, **kwargs):
+        if script.run(CL_StartScript.__name__, script_class_name, lambda: False, *args, **kwargs):
             return script
 
 
 def CL_StopScript(script_class_name):
-    logging.debug(f"Stopping script \"{script_class_name}\"")
     for script in g.script_instances:
         if script.run(CL_StopScript.__name__, script_class_name):
             return script
 
 
-def CL_ParseSnapshot(*args, **kwargs):
-    ps = playerState_t(*args, **kwargs)
+def CL_ParseSnapshot(*args):
+    ps = playerState_t(*args)
     for script in g.script_instances:
         script.run(CL_ParseSnapshot.__name__, ps)
 
