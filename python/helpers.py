@@ -20,7 +20,6 @@ def script_running(script_class):
             return instance.running
 
 
-# Stop a script from within another script
 def stop(script_class):
     """Stop a script"""
     from callbacks import CL_StopScript
@@ -28,13 +27,10 @@ def stop(script_class):
 
 
 def angle_to_degrees(angle):
-    """Convert usercmd_t angle to degrees from -90
-    angle between 0 and 65535 inclusive"""
     return angle * 360 / 65536
 
 
 def degrees_to_angle(degrees):
-    """Convert degrees angle to usercmd_t"""
     return int((degrees * 65536/360)) & 65535
 
 

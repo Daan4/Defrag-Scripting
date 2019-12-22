@@ -73,7 +73,6 @@ def CL_ParseSnapshot(*args):
     ps = playerState_t(*args)
     for script in script_instances:
         script.run(CL_ParseSnapshot.__name__, ps)
-    return tuple(ps)
 
 
 if __name__ == "__main__":

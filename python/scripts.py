@@ -21,16 +21,6 @@ def log_exceptions(func):
     return inner
 
 
-# decorator to store returned cmd in last_cmd
-def save_last_cmd(func):
-    @functools.wraps(func)
-    def inner(*args, **kwargs):
-        global last_cmd
-        last_cmd = func(*args, **kwargs)
-        return last_cmd
-    return inner
-
-
 class BaseScript:
     def __init__(self):
         self.running = False
@@ -55,7 +45,6 @@ class BaseScript:
             else:
                 return args
 
-    @save_last_cmd
     def CL_CreateCmd(self, cmd):
         return cmd
 
@@ -74,7 +63,7 @@ class BaseScript:
         return False
 
     def CL_ParseSnapshot(self, _ps):
-        return _ps
+        pass
 
 
 class DefaultScript(BaseScript):
@@ -123,7 +112,6 @@ class LatestPlayerState(DefaultScript):
     def CL_ParseSnapshot(self, _ps):
         global ps
         ps = _ps
-        return _ps
 
 
 class Kill(BaseScript):
@@ -244,7 +232,6 @@ class EchoStuff(BaseScript):
 
     def CL_ParseSnapshot(self, ps):
         echo("CL_ParseSnapshot".rjust(20) + str(ps.command_time).rjust(20) + str(time.time() * 1000).rjust(20))
-        return ps
 
     def CL_CreateCmd(self, cmd):
         echo("CL_CreateCmd".rjust(20) + str(cmd.server_time).rjust(20) + str(time.time() * 1000).rjust(20))
@@ -265,7 +252,7 @@ class NiceWalkBot(BaseScript):
         diff = cmd.server_time - self.start_time
         if diff < 100:
             # walk backwards for a bit into the back wall
-            do(Walk, BACKWARD, -90)
+            do(Walk, BACKWARD)
         elif diff < 400:
             # walk forward up to at least 320 ups
             if self.prev_diff < 100:
