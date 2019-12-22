@@ -5,9 +5,7 @@ import time
 from constants import *
 from handles import echo, kill, get_predicted_playerstate, set_cl_viewangles
 from helpers import do, stop, degrees_to_angle, angle_to_degrees
-
-# Last known ps state, kept up to date by LatestPlayerState
-ps = None
+import g
 
 
 # decorator to log exceptions that occur in the decorated function
@@ -49,9 +47,6 @@ class BaseScript:
         return cmd
 
     def CL_StartScript(self, script_class_name=None, *args):
-        if self.__class__.__name__ == "LatestPlayerState":
-            logging.debug(f"{self.__class__.__name__} startscript, {script_class_name}")
-
         if script_class_name is None or script_class_name.lower() == self.__class__.__name__.lower() and not self.running:
             self.on_start(*args)
             self.running = True
@@ -112,8 +107,7 @@ class CommandTimeModifier(StartScript):
 
     def CL_CreateCmd(self, cmd):
         pps = get_predicted_playerstate()
-        if pps is not None:
-            cmd.server_time = pps.command_time + 8
+        cmd.server_time = pps.command_time + 8
         return cmd
 
 
@@ -123,8 +117,7 @@ class LatestPlayerState(StartScript):
         super().__init__()
 
     def CL_ParseSnapshot(self, _ps):
-        global ps
-        ps = _ps
+        g.ps = _ps
 
 
 class Kill(BaseScript):
@@ -159,7 +152,7 @@ class Walk(BaseScript):
 
     def CL_CreateCmd(self, cmd):
         if self.base_angle is None:
-            self.base_angle = angle_to_degrees(cmd.angles[YAW] + ps.delta_angles[YAW])
+            self.base_angle = angle_to_degrees(cmd.angles[YAW] + g.ps.delta_angles[YAW])
 
         if self.direction == FORWARD:
             cmd.forwardmove = MOVE_MAX
@@ -178,7 +171,7 @@ class Walk(BaseScript):
             if self.angle_offset != 0:
                 cmd.forwardmove = self.next_movespeed
 
-        cmd.angles[YAW] = degrees_to_angle(self.base_angle + self.angle_offset) - ps.delta_angles[YAW]
+        cmd.angles[YAW] = degrees_to_angle(self.base_angle + self.angle_offset) - g.ps.delta_angles[YAW]
         self.next_movespeed *= -1
         self.angle_offset *= -1
         return cmd
@@ -207,7 +200,7 @@ class CjTurn(BaseScript):
 
     def CL_CreateCmd(self, cmd):
         if self.start_angle is None:
-            self.start_angle = angle_to_degrees(cmd.angles[YAW] + ps.delta_angles[YAW])
+            self.start_angle = angle_to_degrees(cmd.angles[YAW] + g.ps.delta_angles[YAW])
         if self.start_time is None:
             self.start_time = cmd.server_time
         self.angle = self.start_angle
@@ -227,7 +220,7 @@ class CjTurn(BaseScript):
             cmd.forwardmove = 0
             self.CL_StopScript()
 
-        cmd.angles[YAW] = degrees_to_angle(self.angle) - ps.delta_angles[YAW]
+        cmd.angles[YAW] = degrees_to_angle(self.angle) - g.ps.delta_angles[YAW]
         return cmd
 
     def on_start(self, direction, yaw_speed=295, end_angle_offset=90, start_angle=None):

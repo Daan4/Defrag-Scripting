@@ -1,5 +1,6 @@
 import json
 import csv
+import g
 
 
 def do(script_class, *args):
@@ -14,8 +15,7 @@ def do(script_class, *args):
 
 def script_running(script_class):
     """Check if a script class is running or not."""
-    from callbacks import script_instances
-    for instance in script_instances:
+    for instance in g.script_instances:
         if instance.__class__ is script_class:
             return instance.running
 

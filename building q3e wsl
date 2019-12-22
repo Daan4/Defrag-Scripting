@@ -12,7 +12,7 @@ Building on Windows using Windows Subsystem for Linux
     cd /mnt/d/Libraries/Documents/pycharmprojects/Defrag-Scripting/Quake3e-2019-11-29
 
 4) make (make sure the python include path points to your windows installation of python, escaping spaces with \) (it will end with release failed due to python files but it works
-    make PLATFORM="mingw32" CC="x86_64-w64-mingw32-gcc" ARCH="x86_64" PYTHON="/mnt/d/Program\ Files/Python/Python38" CLIENT_EXTRA_FILES="../python/callbacks.py ../python/constants.py ../python/handles.py ../python/helpers.py ../python/scripts.py ../python/structs.py ../python/scripts_record_playback.py"
+    make PLATFORM="mingw32" CC="x86_64-w64-mingw32-gcc" ARCH="x86_64" PYTHON="/mnt/d/Program\ Files/Python/Python38" CLIENT_EXTRA_FILES="../python/callbacks.py ../python/constants.py ../python/handles.py ../python/helpers.py ../python/scripts.py ../python/structs.py ../python/scripts_record_playback.py ../python/g.py"
 
 5) after building create a shortcut with a target like this (for example)
 D:\Libraries\Documents\pycharmprojects\Defrag-Scripting\Quake3e-2019-11-29\build\release-mingw32-x86_64\quake3e.x64.exe +set fs_game defrag +set vm_cgame 2 +set df_gametype 5 +set pmove_fixed 1 +set pmove_msec 8+set g_synchronousclients 0 +vq3 nicewalk-nowall
