@@ -21,9 +21,10 @@ class UpdateCommand(StartScript):
         super().__init__()
 
     def CL_CreateCmd(self, cmd):
-        pps = get_predicted_playerstate()
-        cmd.server_time = pps.command_time + 8
-        cmd.angles[PITCH] += g.ps.delta_angles[PITCH]
-        cmd.angles[YAW] += g.ps.delta_angles[YAW]
-        cmd.angles[ROLL] += g.ps.delta_angles[ROLL]
+        if cmd is not None:
+            pps = get_predicted_playerstate()
+            cmd.server_time = pps.command_time + 8
+            cmd.angles[PITCH] += g.ps.delta_angles[PITCH]
+            cmd.angles[YAW] += g.ps.delta_angles[YAW]
+            cmd.angles[ROLL] += g.ps.delta_angles[ROLL]
         return cmd

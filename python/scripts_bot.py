@@ -2,7 +2,7 @@ from scripts_base_classes import BotScript
 from constants import *
 from helpers import get_speed
 import g
-from scripts_base import Kill, Walk, CjTurn
+from scripts_basic import Kill, Walk, CjTurn
 
 
 class NiceWalk(BotScript):

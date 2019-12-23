@@ -11,7 +11,7 @@ from helpers import log_exceptions
 import scripts_base_classes
 import scripts_start
 import scripts_bot
-import scripts_base
+import scripts_basic
 import scripts_final
 import scripts_record_playback
 
@@ -20,7 +20,7 @@ DEBUG_LOG_FILENAME = "logs/output.log"
 SCRIPT_FILES = ["scripts_base_classes",
                 "scripts_start",
                 "scripts_bot",
-                "scripts_base",
+                "scripts_basic",
                 "scripts_final",
                 "scripts_record_playback"]
 
@@ -28,9 +28,9 @@ SCRIPT_FILES = ["scripts_base_classes",
 def getScriptInstances(classes, script_class, start=False):
     """Find and optionally start classes with script_class as their base class, except for base classes"""
     instances = [x[1]() for x in classes if x[1].__bases__[0] == script_class and
-                 x[1].__name__ not in [scripts_base_classes.BaseScript.__name__,
-                                       scripts_base_classes.StartScript.__name__,
+                 x[1].__name__ not in [scripts_base_classes.StartScript.__name__,
                                        scripts_base_classes.BotScript.__name__,
+                                       scripts_base_classes.BasicScript.__name__,
                                        scripts_base_classes.FinalScript.__name__]]
 
     for instance in instances:
@@ -55,11 +55,11 @@ def CL_Init():
     for file in SCRIPT_FILES:
         classes += inspect.getmembers(sys.modules[file], inspect.isclass)
     # Order of adding to script_instances is the callback execution order
-    # Order: StartScript, BotScript, BaseScript, FinalScript
+    # Order: StartScript, BotScript, BasicScript, FinalScript
     g.script_instances = []
     g.script_instances += getScriptInstances(classes, scripts_base_classes.StartScript)
     g.script_instances += getScriptInstances(classes, scripts_base_classes.BotScript)
-    g.script_instances += getScriptInstances(classes, scripts_base_classes.BaseScript)
+    g.script_instances += getScriptInstances(classes, scripts_base_classes.BasicScript)
     g.script_instances += getScriptInstances(classes, scripts_base_classes.FinalScript)
 
     # run test function for C debugging purposes

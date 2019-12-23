@@ -1,13 +1,13 @@
 import csv
-from scripts_base_classes import BaseScript
+from scripts_base_classes import BasicScript
 from structs import usercmd_t
 
 
-class DemoRecorder(BaseScript):
+class DemoRecorder(BasicScript):
     pass
 
 
-class UsercmdRecord(BaseScript):
+class UsercmdRecord(BasicScript):
     def __init__(self):
         super().__init__()
         self.csv_writer = None
@@ -23,7 +23,7 @@ class UsercmdRecord(BaseScript):
         self.csv_writer = None
 
 
-class UsercmdReplay(BaseScript):
+class UsercmdReplay(BasicScript):
     def __init__(self):
         super().__init__()
         self.csv_reader = None

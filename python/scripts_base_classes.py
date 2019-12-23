@@ -4,6 +4,7 @@ from abc import ABCMeta, abstractmethod
 
 
 class BaseScript:
+    """Contains common core functionality. Scripts should inherit from BaseScript's children instead."""
     def __init__(self):
         self.running = False  # True if script is running
         self.waiting = False  # True if script is waiting
@@ -99,6 +100,12 @@ class BaseScript:
 
     def CL_ParseSnapshot(self, _ps):
         pass
+
+
+class BasicScript(BaseScript):
+    """Like BaseScript"""
+    def __init__(self):
+        super().__init__()
 
 
 class StartScript(BaseScript):

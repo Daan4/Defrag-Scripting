@@ -1,4 +1,4 @@
-from scripts_base_classes import BaseScript
+from scripts_base_classes import BasicScript
 from constants import *
 from handles import kill
 from helpers import degrees_to_angle
@@ -6,7 +6,7 @@ import g
 import threading
 
 
-class Kill(BaseScript):
+class Kill(BasicScript):
     # Combines /kill and +attack to respawn
     def __init__(self):
         super().__init__()
@@ -27,7 +27,7 @@ class Kill(BaseScript):
         threading.Timer(0.1, self.respawn).start()
 
 
-class Walk(BaseScript):
+class Walk(BasicScript):
     # Walk in a given direction, with an optional angle offset to strafe-walk
     def __init__(self):
         super().__init__()
@@ -73,7 +73,7 @@ class Walk(BaseScript):
         self.direction = direction
 
 
-class CjTurn(BaseScript):
+class CjTurn(BasicScript):
     """Turn in a given direction until reaching a given angle while holding forward+strafe
     Yawspeed is given in angle/sec change, and defaults to optimal-ish yawspeed (vq3)
     Will turn start_angle to start_angle + end_angle_offset in direction LEFT or RIGHT

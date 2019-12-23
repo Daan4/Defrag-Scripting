@@ -12,13 +12,14 @@ class UpdateAngles(FinalScript):
         super().__init__()
 
     def CL_CreateCmd(self, cmd):
-        cmd.angles[PITCH] -= g.ps.delta_angles[PITCH]
-        cmd.angles[YAW] -= g.ps.delta_angles[YAW]
-        cmd.angles[ROLL] -= g.ps.delta_angles[ROLL]
-        pitch = angle_to_degrees(cmd.angles[PITCH])
-        yaw = angle_to_degrees(cmd.angles[YAW])
-        roll = angle_to_degrees(cmd.angles[ROLL])
-        set_cl_viewangles(pitch, yaw, roll)
+        if cmd is not None:
+            cmd.angles[PITCH] -= g.ps.delta_angles[PITCH]
+            cmd.angles[YAW] -= g.ps.delta_angles[YAW]
+            cmd.angles[ROLL] -= g.ps.delta_angles[ROLL]
+            pitch = angle_to_degrees(cmd.angles[PITCH])
+            yaw = angle_to_degrees(cmd.angles[YAW])
+            roll = angle_to_degrees(cmd.angles[ROLL])
+            set_cl_viewangles(pitch, yaw, roll)
         return cmd
 
 
