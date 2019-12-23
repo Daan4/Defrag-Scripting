@@ -1,5 +1,6 @@
 import g
 import logging
+import keyboard
 from abc import ABCMeta, abstractmethod
 
 
@@ -11,7 +12,7 @@ class BaseScript:
         self.prev_waiting = False  # Waiting state of previous frame, used to detect script finish in the callback
         self.wait_script = None  # Instance of the script that the current script is waiting on, or None
         self.stop_condition = None  # A function which auto-stops the script if it evaluates to True
-        self.autostart = False
+        self.autostart = False  # Set to true to autostart on CL_Init
 
     def on_start(self, *args, **kwargs):
         """Called when script is started by startscript console command"""
@@ -55,7 +56,6 @@ class BaseScript:
             return self.CL_StartScript(*args, **kwargs)
         elif self.running and not self.waiting:
             if not self.stop_condition():
-                # Fire the callback
                 return getattr(self, callback)(*args, **kwargs)
             else:
                 self.CL_StopScript()
@@ -103,9 +103,20 @@ class BaseScript:
 
 
 class BasicScript(BaseScript):
-    """Like BaseScript"""
+    """Like BaseScript; additionatly these can be set to wait after each frame for the enter key to be pressed"""
     def __init__(self):
         super().__init__()
+
+        # Set to true to block after each frame until the enter key is pressed
+        # Only applies to CL_CreateCmd callback and BasicScript class
+        self.wait_after_frame = False
+
+    def run(self, callback, *args, **kwargs):
+        # Fire the callback, wait until keypress if required
+        if callback == self.CL_CreateCmd.__name__ and self.wait_after_frame:
+            logging.debug(f"blocking in {self.__class__.__name__}")
+            keyboard.wait('enter')
+        return super().run(callback, *args, **kwargs)
 
 
 class StartScript(BaseScript):
@@ -135,9 +146,14 @@ class BotScript(BaseScript, metaclass=ABCMeta):
         super().__init__()
         self.script_sequence = []
         self.current_script = 0
-        self.init_script_sequence()
         self.autostart = False
         self.current_script_instance = None
+
+        # Wait for enter keypress after script finishes / after each frame
+        self.wait_after_frame = False
+        self.wait_after_script = False
+
+        self.init_script_sequence()
 
     def add(self, script_class, stop_condition=None, *args, **kwargs):
         """Register a script in the script sequence"""
@@ -147,13 +163,17 @@ class BotScript(BaseScript, metaclass=ABCMeta):
 
     def CL_CreateCmd(self, cmd):
         if self.wait_done():
+            if self.wait_after_script:
+                keyboard.wait('enter')
             self.current_script += 1
 
         if self.current_script == len(self.script_sequence):
             self.CL_StopScript()
+
         else:
             script_class, stop_condition, args, kwargs = self.script_sequence[self.current_script]
             self.current_script_instance = self.do(script_class, stop_condition, *args, **kwargs)
+            self.current_script_instance.wait_after_frame = self.wait_after_frame
         return cmd
 
     def on_start(self, *args, **kwargs):
