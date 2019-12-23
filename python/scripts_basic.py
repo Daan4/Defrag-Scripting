@@ -35,6 +35,8 @@ class Walk(BasicScript):
         self.angle_offset = None  # ~max 405 ups @ 6
         self.base_angle = None
         self.direction = None
+        self.switch_delay = None
+        self.frames_since_switch = None
 
     def CL_CreateCmd(self, cmd):
         if self.base_angle is None:
@@ -58,11 +60,24 @@ class Walk(BasicScript):
                 cmd.forwardmove = self.next_movespeed
 
         cmd.angles[YAW] = degrees_to_angle(self.base_angle + self.angle_offset)
-        self.next_movespeed *= -1
-        self.angle_offset *= -1
+        if self.frames_since_switch == self.switch_delay:
+            self.next_movespeed *= -1
+            self.angle_offset *= -1
+            self.frames_since_switch = 0
+        else:
+            self.frames_since_switch += 1
         return cmd
 
-    def on_start(self, direction, angle_deg=None, angle_offset_deg=0):
+    def on_start(self, direction, angle_deg=None, angle_offset_deg=0, switch_delay=0):
+        """
+        Args:
+            direction: Movement button to hold [FORWARD BACKWARD LEFT RIGHT]
+            angle_deg: Angle to walk in
+            angle_offset_deg: Angle offset for strafe-walking; positive starts right, negative starts left
+            switch_delay: Time in frames between direction switches
+        """
+        self.switch_delay = 0
+        self.frames_since_switch = 0
         self.base_angle = angle_deg
         self.angle_offset = angle_offset_deg
         if self.angle_offset < 0:
@@ -114,6 +129,13 @@ class CjTurn(BasicScript):
         return cmd
 
     def on_start(self, direction, end_angle_offset=90, start_angle=None, yaw_speed=295):
+        """
+        Args:
+            direction: Turn direction [LEFT RIGHT]
+            end_angle_offset: Turn angle in degrees (this + start_angle == final angle)
+            start_angle: Starting angle, None uses the current viewangle
+            yaw_speed: Turn speed in degrees/second
+        """
         self.yaw_speed = yaw_speed
         self.direction = direction
         self.start_angle = start_angle
