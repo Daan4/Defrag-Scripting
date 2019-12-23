@@ -137,8 +137,9 @@ class BotScript(BaseScript, metaclass=ABCMeta):
         self.current_script = 0
         self.init_script_sequence()
         self.autostart = False
+        self.current_script_instance = None
 
-    def add_script(self, script_class, stop_condition=None, *args, **kwargs):
+    def add(self, script_class, stop_condition=None, *args, **kwargs):
         """Register a script in the script sequence"""
         if stop_condition is None:
             stop_condition = lambda: False
@@ -152,11 +153,16 @@ class BotScript(BaseScript, metaclass=ABCMeta):
             self.CL_StopScript()
         else:
             script_class, stop_condition, args, kwargs = self.script_sequence[self.current_script]
-            self.do(script_class, stop_condition, *args, **kwargs)
+            self.current_script_instance = self.do(script_class, stop_condition, *args, **kwargs)
         return cmd
 
     def on_start(self, *args, **kwargs):
         self.current_script = 0
+
+    def on_stop(self):
+        """Stop the currently running script as well"""
+        if self.current_script_instance:
+            self.current_script_instance.CL_StopScript()
 
     @abstractmethod
     def init_script_sequence(self):
