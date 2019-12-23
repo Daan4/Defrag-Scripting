@@ -13,6 +13,4 @@ fix small 0.005 ish angle offset that happens with current conversion setup
 (probably have to revert to using usercmd.angles, except without ever converting them
 probably need some internal conversion function which IS symmetric?
 
-build timer condition based on time, and timer condition based on cp/timer triggers
-
-create more sophisticated scheduler / event system. Atm if a waited-on script finished, the waiting script only continues next frame
+for xpc solve   f(x) = -c * sin(a + b - 2 x) + w * sin(b - x) = 0 -> need solver
