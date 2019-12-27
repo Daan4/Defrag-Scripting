@@ -14,17 +14,17 @@ class NiceWalk(BotScript):
         # self.wait_after_script = False
         # self.wait_after_frame = True
         #
-        self.add(Walk, lambda: g.ps.origin[Y] >= 464, BACKWARD)
-        self.add(WalkAuto, lambda: g.ps.stats[TIMER_CP_HIT] == 524)
-
-
-        # self.wait_after_frame = False
-        # self.wait_after_script = True
-        #
         # self.add(Walk, lambda: g.ps.origin[Y] >= 464, BACKWARD)
-        # self.add(Walk, lambda: get_speed() == 320, FORWARD, -180)
-        # self.add(CjTurn, None, LEFT, 96, -180)
-        # self.add(Walk, lambda: g.ps.stats[TIMER_CP_HIT] == 524, FORWARD, -90, -6, 4)
+        # self.add(WalkAuto, lambda: g.ps.stats[TIMER_CP_HIT] == 524)
+
+
+        self.wait_after_frame = True
+        self.wait_after_script = False
+
+        self.add(Walk, lambda: g.ps.origin[Y] >= 464, BACKWARD)
+        self.add(Walk, lambda: get_speed() == 320, FORWARD, -180)
+        self.add(CjTurn, None, LEFT, 96, -180)
+        self.add(Walk, lambda: g.ps.stats[TIMER_CP_HIT] == 524, FORWARD, -90, -6)
 
         # Experiment with walking
         # self.add(Walk, lambda: g.ps.origin[Y] >= 464, BACKWARD)

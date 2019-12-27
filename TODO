@@ -4,8 +4,7 @@ ideas: ultimate hodor bot
 record inputs from demoes for playback -> look into saving / writing playerstate in snapshot / clientsnapshot
 apparently ps.stats[13] will show keypresses or usercmd stuff from in demoes, investigate other demo stuff
 
-auto copy over python files, including a folder structure
-automate load / deployment / launch engine
+auto copy over python files, including a folder structure, including libs
 
 some maffs https://dimit.me/blog/2017/08/08/defrag-strafe-theory/
 
@@ -13,4 +12,57 @@ fix small 0.005 ish angle offset that happens with current conversion setup
 (probably have to revert to using usercmd.angles, except without ever converting them
 probably need some internal conversion function which IS symmetric?
 
+enter to continue frame/script
+shift+enter to toggle frame-by-frame (also turn off script-by-script)
+ctrl+enter to toggle script-by-script (also turn off frame-by-frame)
+
+fix wonkyness with pausing after frame?
+cant stop script when pausing
+-> Wait for enter key in seperate thread when paused()
+
+stop on timer hit broken in frame-by-frame
+
+
+on botscript allow adding arbitrary python functions to be ran inbetween or something?
+
 for xpc solve   f(x) = -c * sin(a + b - 2 x) + w * sin(b - x) = 0 -> need solver
+
+xpc math:
+https://cdn.discordapp.com/attachments/643916692262617098/660160256344719372/unknown.png
+note: it doesn't account for clipvel, snapping, a2s2a (and degree/rad conversions)
+
+float calc_fric_coeff(float speed) {
+    if(speed < 1) {
+        return 0;
+    }
+
+    float control = speed < 100.0 ? 100.0 : speed;
+    float drop = control * 6.0 * 0.008;
+    if(speed - drop < 0) {
+        return 0;
+    }
+
+    return (speed - drop) / speed;
+}
+
+double proj_vel_objective(unsigned n, const double *w, double *grad, void *data) {
+    double theta_w = w[0];
+    const double theta_d = 3*M_PI/2;
+    vec3_t v = {cl.snap.ps.velocity[0], cl.snap.ps.velocity[1], 0};
+
+    float speed = VectorLength(v);
+    float f = calc_fric_coeff(speed);
+    double theta_v = atan2(v[1], v[0]);
+    float a = Com_Clamp(0, 10.0*0.008*cl.snap.ps.speed,
+                cl.snap.ps.speed - f*speed*cos(theta_v - theta_w));
+
+    // update gradient to account for lower bound by 0
+    // if(grad != NULL) {
+    //     if(10.0*0.008*cl.snap.ps.speed + f*speed*cos(theta_v - theta_w) <= cl.snap.ps.speed) {
+    //         grad[0] = 10.0*0.008*cl.snap.ps.speed*sin(theta_d - theta_w);
+    //     } else {
+    //         grad[0] = cl.snap.ps.speed*sin(theta_d - theta_w) - f*speed*sin(theta_d+theta_v-2*theta_w);
+    //     }
+    // }
+    return f*speed*cos(theta_v - theta_d) + a*cos(theta_w - theta_d);
+}

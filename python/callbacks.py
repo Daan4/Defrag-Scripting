@@ -4,7 +4,7 @@ from structs import usercmd_t, playerState_t
 import sys
 import inspect
 import g
-from helpers import log_exceptions
+from helpers import log_exceptions, pause
 
 # import any files containing scripts.
 # the module names should also be in the global constant SCRIPT_MODULES
@@ -69,6 +69,9 @@ def CL_Init():
 
 @log_exceptions
 def CL_CreateCmd(*args):
+    if g.pause_next_frame:
+        g.pause_next_frame = False
+        pause()
     cmd = usercmd_t(*args)
     for script in g.script_instances:
         cmd = script.run(CL_CreateCmd.__name__, cmd)

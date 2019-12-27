@@ -77,7 +77,7 @@ class Walk(BasicScript):
             angle_offset_deg: Angle offset for strafe-walking; positive starts right, negative starts left
             switch_delay: Time in frames between direction switches
         """
-        self.switch_delay = 0
+        self.switch_delay = switch_delay
         self.frames_since_switch = 0
         self.base_angle = angle_deg
         self.angle_offset = angle_offset_deg
@@ -97,7 +97,13 @@ class WalkAuto(BasicScript):
     def CL_CreateCmd(self, cmd):
         best_angle = 0
         best_speed = 0
-        for i in range(0, 65536):
+        for i in range(37769, 60536, 12):
+            speed = calc_strafewalk_speed(i)
+            if speed > best_speed:
+                best_angle = i
+                best_speed = speed
+        best_speed = 0
+        for i in range(best_angle - 12, best_angle + 12):
             speed = calc_strafewalk_speed(i)
             if speed > best_speed:
                 best_angle = i

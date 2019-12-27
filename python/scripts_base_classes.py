@@ -2,7 +2,7 @@ import g
 import logging
 import keyboard
 from abc import ABCMeta, abstractmethod
-from helpers import toggle_pause, paused
+from helpers import pause, paused
 
 
 class BaseScript:
@@ -114,11 +114,9 @@ class BasicScript(BaseScript):
 
     def run(self, callback, *args, **kwargs):
         # Fire the callback, wait until keypress if required
-        if callback == self.CL_CreateCmd.__name__ and self.wait_after_frame:
-            toggle_pause()
-            keyboard.wait('enter')
-            toggle_pause()
-
+        if callback == self.CL_CreateCmd.__name__ and self.wait_after_frame and self.running and not paused():
+            g.pause_next_frame = True
+            #pause()
         return super().run(callback, *args, **kwargs)
 
 
@@ -167,18 +165,16 @@ class BotScript(BaseScript, metaclass=ABCMeta):
     def CL_CreateCmd(self, cmd):
         if self.wait_done():
             if self.wait_after_script:
-                toggle_pause()
-                keyboard.wait('enter')
-                toggle_pause()
+                pause()
             self.current_script += 1
 
         if self.current_script == len(self.script_sequence):
             self.CL_StopScript()
-
         else:
             script_class, stop_condition, args, kwargs = self.script_sequence[self.current_script]
             self.current_script_instance = self.do(script_class, stop_condition, *args, **kwargs)
             self.current_script_instance.wait_after_frame = self.wait_after_frame
+
         return cmd
 
     def on_start(self, *args, **kwargs):

@@ -3771,6 +3771,11 @@ void CL_StopScript(void) {
     Py_CL_StopScript(scriptClassName);
 }
 
+void CL_ContinueScript(void) {
+    // reset cl_paused when /continue command is received
+    Cvar_Set("cl_paused", "0");
+}
+
 /*
 ====================
 CL_Init
@@ -3937,6 +3942,7 @@ void CL_Init( void ) {
     // Used with python api
 	Cmd_AddCommand ("startscript", CL_StartScript);
 	Cmd_AddCommand ("stopscript", CL_StopScript);
+	Cmd_AddCommand ("continue", CL_ContinueScript);
 	Cmd_AddCommand ("pyreload", CL_ReloadPython);
 
 	CL_InitRef();

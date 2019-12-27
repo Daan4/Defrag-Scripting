@@ -6,6 +6,9 @@ from constants import *
 import functools
 import logging
 from handles import get_cvar, set_cvar
+import threading
+import keyboard
+import time
 
 
 # decorator to log exceptions that occur in the decorated function
@@ -32,11 +35,8 @@ def get_speed():
     return sqrt(g.ps.velocity[0] ** 2 + g.ps.velocity[1] ** 2)
 
 
-def toggle_pause():
-    if get_cvar("cl_paused") == "1":
-        set_cvar("cl_paused", "0")
-    else:
-        set_cvar("cl_paused", "1")
+def pause():
+    set_cvar("cl_paused", "1")
 
 
 def paused():
@@ -64,15 +64,16 @@ def calc_strafewalk_speed(w):
     Calculates strafewalk speed (if holding +forward) given a certain wish angle.
     Maximize output to find optimal angle.
     input between theta_d - 0.5pi and theta_d + 0.5pi (pi and 2 pi), nicewalk-nowall 3/2pi is forward
+    Assumes forwardmove = MOVE_MAX = 127
 
     Args:
-        w: Wish angle in radians
+        w: view angle yaw
 
     Returns:
-        projected speed
+        projected speed at view angle w
 
     """
-    # W from short to angle in radiant
+    # W from short to angle in radians
     w = angle_to_degrees(w) * pi / 180
     theta_d = 3 * pi / 2
     speed = get_speed()
