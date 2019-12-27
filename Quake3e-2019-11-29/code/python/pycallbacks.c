@@ -16,6 +16,8 @@ static PyMethodDef Methods[] = {
     {"Py_Cbuf_ExecuteText", Py_Cbuf_ExecuteText, METH_VARARGS, "Execute a console command."},
     {"Py_GetPredictedPlayerstate", Py_GetPredictedPlayerstate, METH_VARARGS, "Get predicted playerstate."},
     {"Py_UpdateViewangles", Py_UpdateViewangles, METH_VARARGS, "Update cl->viewangles."},
+    {"Py_Cvar_Set", Py_Cvar_Set, METH_VARARGS, "Set Cvar value (outside of console as with Cbuf_ExecuteText)."},
+    {"Py_Cvar_Get", Py_Cvar_Get, METH_VARARGS, "Get Cvar value."},
     {"Py_TestFunction", Py_TestFunction, METH_VARARGS, "Testing Function"},
     {NULL, NULL, 0, NULL}
 };
@@ -141,6 +143,31 @@ PyObject *Py_UpdateViewangles(PyObject *self, PyObject *args)
     cl.viewangles[0] = pitch;
     cl.viewangles[1] = yaw;
     cl.viewangles[2] = roll;
+
+    Py_RETURN_NONE;
+}
+
+
+PyObject *Py_Cvar_Get(PyObject *self, PyObject *args)
+{
+    char *name;
+    const char *value = "0";
+    if(!PyArg_ParseTuple(args, "s", &name))
+        return NULL;
+
+    cvar_t *cv = Cvar_Get(name, value, 0);
+
+    return PyUnicode_FromString(cv->string);
+}
+
+PyObject *Py_Cvar_Set(PyObject *self, PyObject *args)
+{
+    char *name;
+    char *value;
+    if(!PyArg_ParseTuple(args, "ss", &name, &value))
+        return NULL;
+
+    Cvar_Set(name, value);
 
     Py_RETURN_NONE;
 }

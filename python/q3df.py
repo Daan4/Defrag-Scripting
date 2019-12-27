@@ -16,3 +16,11 @@ def Py_UpdateViewangles(*args, **kwargs):
 
 def Py_TestFunction(*args, **kwargs):
     pass
+
+
+def Py_Cvar_Set(*args, **kwargs):
+    pass
+
+
+def Py_Cvar_Get(*args, **kwargs):
+    pass

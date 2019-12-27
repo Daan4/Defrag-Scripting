@@ -1,9 +1,10 @@
 from scripts_base_classes import BasicScript
 from constants import *
 from handles import kill
-from helpers import degrees_to_angle
+from helpers import degrees_to_angle, calc_strafewalk_speed
 import g
 import threading
+import logging
 
 
 class Kill(BasicScript):
@@ -86,6 +87,24 @@ class Walk(BasicScript):
         else:
             self.next_movespeed = MOVE_MAX
         self.direction = direction
+
+
+class WalkAuto(BasicScript):
+    """Automatically strafewalk in a given direction"""
+    def __init__(self):
+        super().__init__()
+
+    def CL_CreateCmd(self, cmd):
+        best_angle = 0
+        best_speed = 0
+        for i in range(0, 65536):
+            speed = calc_strafewalk_speed(i)
+            if speed > best_speed:
+                best_angle = i
+                best_speed = speed
+        cmd.angles[YAW] = best_angle
+        cmd.forwardmove = MOVE_MAX
+        return cmd
 
 
 class CjTurn(BasicScript):
