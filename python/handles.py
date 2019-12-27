@@ -21,3 +21,11 @@ def kill():
 
 def test():
     logging.debug(f"test result {q3df.Py_TestFunction()}")
+
+
+def set_cvar(name, value):
+    q3df.Py_Cvar_Set(name, value)
+
+
+def get_cvar(name):
+    return q3df.Py_Cvar_Get(name)

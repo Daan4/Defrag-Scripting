@@ -2,6 +2,7 @@ import g
 import logging
 import keyboard
 from abc import ABCMeta, abstractmethod
+from helpers import toggle_pause, paused
 
 
 class BaseScript:
@@ -103,7 +104,7 @@ class BaseScript:
 
 
 class BasicScript(BaseScript):
-    """Like BaseScript; additionatly these can be set to wait after each frame for the enter key to be pressed"""
+    """Like BaseScript; additionally these can be set to wait after each frame for the enter key to be pressed"""
     def __init__(self):
         super().__init__()
 
@@ -113,9 +114,13 @@ class BasicScript(BaseScript):
 
     def run(self, callback, *args, **kwargs):
         # Fire the callback, wait until keypress if required
-        if callback == self.CL_CreateCmd.__name__ and self.wait_after_frame:
-            logging.debug(f"blocking in {self.__class__.__name__}")
-            keyboard.wait('enter')
+        if callback == self.CL_CreateCmd.__name__:
+            if paused():
+                keyboard.wait('enter')
+                toggle_pause()
+            elif self.wait_after_frame:
+                toggle_pause()
+
         return super().run(callback, *args, **kwargs)
 
 
@@ -163,9 +168,13 @@ class BotScript(BaseScript, metaclass=ABCMeta):
 
     def CL_CreateCmd(self, cmd):
         if self.wait_done():
-            if self.wait_after_script:
-                keyboard.wait('enter')
+            if self.wait_after_script and not paused():
+                toggle_pause()
             self.current_script += 1
+
+        if paused():
+            keyboard.wait('enter')
+            toggle_pause()
 
         if self.current_script == len(self.script_sequence):
             self.CL_StopScript()

@@ -31,6 +31,10 @@ PyObject *Py_GetPredictedPlayerstate(PyObject *self, PyObject *args);
 
 PyObject *Py_UpdateViewangles(PyObject *self, PyObject *args);
 
+PyObject *Py_Cvar_Set(PyObject *self, PyObject *args);
+
+PyObject *Py_Cvar_Get(PyObject *self, PyObject *args);
+
 PyObject *Py_TestFunction(PyObject *self, PyObject *args);
 
 // Helper functions
