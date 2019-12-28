@@ -5,7 +5,7 @@ from math import sqrt, pi, atan2, cos
 from constants import *
 import functools
 import logging
-from handles import get_cvar, set_cvar
+from handles import get_cvar, set_cvar, console_command
 import threading
 import keyboard
 import time
@@ -37,6 +37,11 @@ def get_speed():
 
 def pause():
     set_cvar("cl_paused", "1")
+
+
+def unpause():
+    g.do_pause = False
+    console_command("continue")
 
 
 def paused():

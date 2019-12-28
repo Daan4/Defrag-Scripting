@@ -2,7 +2,7 @@ import g
 import logging
 import keyboard
 from abc import ABCMeta, abstractmethod
-from helpers import pause, paused
+from helpers import pause, paused, unpause
 
 
 class BaseScript:
@@ -113,10 +113,9 @@ class BasicScript(BaseScript):
         self.wait_after_frame = False
 
     def run(self, callback, *args, **kwargs):
-        # Fire the callback, wait until keypress if required
-        if callback == self.CL_CreateCmd.__name__ and self.wait_after_frame and self.running and not paused():
-            g.pause_next_frame = True
-            #pause()
+        # Fire the callback; pause if required
+        if callback == self.CL_CreateCmd.__name__ and self.wait_after_frame and self.running:
+            g.do_pause = True
         return super().run(callback, *args, **kwargs)
 
 
@@ -165,7 +164,7 @@ class BotScript(BaseScript, metaclass=ABCMeta):
     def CL_CreateCmd(self, cmd):
         if self.wait_done():
             if self.wait_after_script:
-                pause()
+                g.do_pause = True
             self.current_script += 1
 
         if self.current_script == len(self.script_sequence):
@@ -184,6 +183,8 @@ class BotScript(BaseScript, metaclass=ABCMeta):
         """Stop the currently running script as well"""
         if self.current_script_instance:
             self.current_script_instance.CL_StopScript()
+            if paused():
+                unpause()
 
     @abstractmethod
     def init_script_sequence(self):

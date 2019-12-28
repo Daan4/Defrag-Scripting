@@ -3774,6 +3774,7 @@ void CL_StopScript(void) {
 void CL_ContinueScript(void) {
     // reset cl_paused when /continue command is received
     Cvar_Set("cl_paused", "0");
+    Cvar_Set("sv_paused", "0");
 }
 
 /*

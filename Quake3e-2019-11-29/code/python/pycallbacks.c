@@ -8,6 +8,7 @@ const char *CL_CREATECMD_FUNCTION = "CL_CreateCmd";
 const char *CL_STARTSCRIPT_FUNCTION = "CL_StartScript";
 const char *CL_STOPSCRIPT_FUNCTION = "CL_StopScript";
 const char *CL_PARSESNAPSHOT_FUNCTION = "CL_ParseSnapshot";
+const char *CL_LOGMESSAGE_FUNCTION = "CL_LogMessage";
 
 PyObject *CALLBACK_MODULE;
 
@@ -106,6 +107,17 @@ void Py_CL_ParseSnapshot(clientActive_t *cl) {
     PyObject *Args = playerStateToTuple(ps);
 
     PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_PARSESNAPSHOT_FUNCTION);
+    PyObject_CallObject(Func, Args);
+
+    Py_DECREF(Args);
+    Py_DECREF(Func);
+}
+
+void Py_CL_LogMessage(const char *message) {
+    PyObject *Args = PyTuple_New(1);
+    PyTuple_SetItem(Args, 0, PyUnicode_FromString(message));
+
+    PyObject *Func = PyObject_GetAttrString(CALLBACK_MODULE, CL_LOGMESSAGE_FUNCTION);
     PyObject_CallObject(Func, Args);
 
     Py_DECREF(Args);

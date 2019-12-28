@@ -12,15 +12,10 @@ fix small 0.005 ish angle offset that happens with current conversion setup
 (probably have to revert to using usercmd.angles, except without ever converting them
 probably need some internal conversion function which IS symmetric?
 
-enter to continue frame/script
-shift+enter to toggle frame-by-frame (also turn off script-by-script)
-ctrl+enter to toggle script-by-script (also turn off frame-by-frame)
-
-fix wonkyness with pausing after frame?
-cant stop script when pausing
--> Wait for enter key in seperate thread when paused()
-
 stop on timer hit broken in frame-by-frame
+demo saving broken in frame by frame?
+
+set up asynchronous calculation that runs while paused, and unpauses when done
 
 
 on botscript allow adding arbitrary python functions to be ran inbetween or something?
