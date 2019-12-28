@@ -11,15 +11,15 @@ class NiceWalk(BotScript):
         super().__init__()
 
     def init_script_sequence(self):
-        # self.wait_after_script = False
-        # self.wait_after_frame = True
+        # self.pause_after_script = False
+        # self.pause_after_frame = True
         #
         # self.add(Walk, lambda: g.ps.origin[Y] >= 464, BACKWARD)
         # self.add(WalkAuto, lambda: g.ps.stats[TIMER_CP_HIT] == 524)
 
 
-        self.wait_after_frame = True
-        self.wait_after_script = False
+        self.pause_after_frame = False
+        self.pause_after_script = True
 
         self.add(Walk, lambda: g.ps.origin[Y] >= 464, BACKWARD)
         self.add(Walk, lambda: get_speed() == 320, FORWARD, -180)

@@ -23,6 +23,10 @@ def test():
     logging.debug(f"test result {q3df.Py_TestFunction()}")
 
 
+def console_command(cmd):
+    q3df.Py_Cbuf_ExecuteText(f"{cmd}\n")
+
+
 def set_cvar(name, value):
     q3df.Py_Cvar_Set(name, value)
 

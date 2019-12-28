@@ -5,6 +5,7 @@ import sys
 import inspect
 import g
 from helpers import log_exceptions, pause
+import threading
 
 # import any files containing scripts.
 # the module names should also be in the global constant SCRIPT_MODULES
@@ -69,12 +70,12 @@ def CL_Init():
 
 @log_exceptions
 def CL_CreateCmd(*args):
-    if g.pause_next_frame:
-        g.pause_next_frame = False
-        pause()
     cmd = usercmd_t(*args)
     for script in g.script_instances:
         cmd = script.run(CL_CreateCmd.__name__, cmd)
+    if g.do_pause:
+        g.do_pause = False
+        pause()
     return tuple(cmd)
 
 
@@ -97,3 +98,8 @@ def CL_ParseSnapshot(*args):
     ps = playerState_t(*args)
     for script in g.script_instances:
         script.run(CL_ParseSnapshot.__name__, ps)
+
+
+@log_exceptions
+def CL_LogMessage(message):
+    logging.debug(f"C logging: {message}")

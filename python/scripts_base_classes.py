@@ -2,7 +2,7 @@ import g
 import logging
 import keyboard
 from abc import ABCMeta, abstractmethod
-from helpers import pause, paused
+from helpers import pause, paused, unpause
 
 
 class BaseScript:
@@ -110,13 +110,12 @@ class BasicScript(BaseScript):
 
         # Set to true to block after each frame until the enter key is pressed
         # Only applies to CL_CreateCmd callback and BasicScript class
-        self.wait_after_frame = False
+        self.pause_after_frame = False
 
     def run(self, callback, *args, **kwargs):
-        # Fire the callback, wait until keypress if required
-        if callback == self.CL_CreateCmd.__name__ and self.wait_after_frame and self.running and not paused():
-            g.pause_next_frame = True
-            #pause()
+        # Fire the callback; pause if required
+        if callback == self.CL_CreateCmd.__name__ and self.pause_after_frame and self.running:
+            g.do_pause = True
         return super().run(callback, *args, **kwargs)
 
 
@@ -151,8 +150,8 @@ class BotScript(BaseScript, metaclass=ABCMeta):
         self.current_script_instance = None
 
         # Wait for enter keypress after script finishes / after each frame
-        self.wait_after_frame = False
-        self.wait_after_script = False
+        self.pause_after_frame = False
+        self.pause_after_script = False
 
         self.init_script_sequence()
 
@@ -164,8 +163,8 @@ class BotScript(BaseScript, metaclass=ABCMeta):
 
     def CL_CreateCmd(self, cmd):
         if self.wait_done():
-            if self.wait_after_script:
-                pause()
+            if self.pause_after_script:
+                g.do_pause = True
             self.current_script += 1
 
         if self.current_script == len(self.script_sequence):
@@ -173,7 +172,7 @@ class BotScript(BaseScript, metaclass=ABCMeta):
         else:
             script_class, stop_condition, args, kwargs = self.script_sequence[self.current_script]
             self.current_script_instance = self.do(script_class, stop_condition, *args, **kwargs)
-            self.current_script_instance.wait_after_frame = self.wait_after_frame
+            self.current_script_instance.pause_after_frame = self.pause_after_frame
 
         return cmd
 
@@ -184,6 +183,8 @@ class BotScript(BaseScript, metaclass=ABCMeta):
         """Stop the currently running script as well"""
         if self.current_script_instance:
             self.current_script_instance.CL_StopScript()
+            if paused():
+                unpause()
 
     @abstractmethod
     def init_script_sequence(self):

@@ -24,6 +24,9 @@ void Py_CL_StopScript(char *scriptClassName);
 // Callback from client/cl_parse.c : CL_ParseSnapshot
 void Py_CL_ParseSnapshot(clientActive_t *cl);
 
+// Callback that logs a message in Python
+void Py_CL_LogMessage(const char *message);
+
 // Handle to qcommon/qcommon.h : Cbuf_ExecuteText;
 PyObject *Py_Cbuf_ExecuteText(PyObject *self, PyObject *args);
 

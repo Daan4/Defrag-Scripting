@@ -7,4 +7,4 @@ script_instances = None
 # Last known playerState_t, kept up to date by LatestPlayerState StartScript
 ps = None
 
-pause_next_frame = False
+do_pause = False
