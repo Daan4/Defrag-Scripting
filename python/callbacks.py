@@ -73,9 +73,6 @@ def CL_CreateCmd(*args):
     cmd = usercmd_t(*args)
     for script in g.script_instances:
         cmd = script.run(CL_CreateCmd.__name__, cmd)
-    if g.do_pause:
-        g.do_pause = False
-        pause()
     return tuple(cmd)
 
 

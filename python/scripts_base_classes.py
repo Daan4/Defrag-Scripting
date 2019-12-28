@@ -115,7 +115,7 @@ class BasicScript(BaseScript):
     def run(self, callback, *args, **kwargs):
         # Fire the callback; pause if required
         if callback == self.CL_CreateCmd.__name__ and self.pause_after_frame and self.running:
-            g.do_pause = True
+            pause()
         return super().run(callback, *args, **kwargs)
 
 
@@ -164,7 +164,7 @@ class BotScript(BaseScript, metaclass=ABCMeta):
     def CL_CreateCmd(self, cmd):
         if self.wait_done():
             if self.pause_after_script:
-                g.do_pause = True
+                pause()
             self.current_script += 1
 
         if self.current_script == len(self.script_sequence):

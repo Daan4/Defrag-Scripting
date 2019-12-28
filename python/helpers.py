@@ -40,7 +40,6 @@ def pause():
 
 
 def unpause():
-    g.do_pause = False
     console_command("continue")
 
 
