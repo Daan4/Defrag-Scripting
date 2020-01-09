@@ -23,12 +23,13 @@ class BaseScript:
         """Called when script is stopped by stopscript console command"""
         pass
 
-    def do(self, script_class, stop_condition=None, *args, **kwargs):
+    def do(self, script_class, stop_condition=None, pause_after_frame=None, *args, **kwargs):
         """Start another script, and if a stop_condition is given wait for it to finish."""
         for instance in g.script_instances:
             if script_class is instance.__class__:
                 if stop_condition is not None:
                     self.wait(instance)
+                instance.pause_after_frame = pause_after_frame
                 instance.CL_StartScript(script_class.__name__, stop_condition, *args, **kwargs)
                 return instance
 
@@ -87,6 +88,7 @@ class BaseScript:
         return False
 
     def CL_StopScript(self, script_class_name=None):
+        logging.debug(f"attempting stop {script_class_name}, {self.__class__.__name__}")
         if script_class_name is None:
             script_class_name = self.__class__.__name__
         if script_class_name.lower() == self.__class__.__name__.lower() and self.running:
@@ -171,13 +173,14 @@ class BotScript(BaseScript, metaclass=ABCMeta):
             self.CL_StopScript()
         else:
             script_class, stop_condition, args, kwargs = self.script_sequence[self.current_script]
-            self.current_script_instance = self.do(script_class, stop_condition, *args, **kwargs)
-            self.current_script_instance.pause_after_frame = self.pause_after_frame
+            self.current_script_instance = self.do(script_class, stop_condition, self.pause_after_frame, *args, **kwargs)
 
         return cmd
 
     def on_start(self, *args, **kwargs):
         self.current_script = 0
+        if self.pause_after_frame:
+            pause()
 
     def on_stop(self):
         """Stop the currently running script as well"""

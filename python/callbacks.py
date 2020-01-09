@@ -79,14 +79,14 @@ def CL_CreateCmd(*args):
 @log_exceptions
 def CL_StartScript(script_class_name, *args, **kwargs):
     for script in g.script_instances:
-        if script.run(CL_StartScript.__name__, script_class_name, None, *args, **kwargs):
+        if script.run(CL_StartScript.__name__, script_class_name, None, *args, **kwargs) == True:
             return script
 
 
 @log_exceptions
 def CL_StopScript(script_class_name):
     for script in g.script_instances:
-        if script.run(CL_StopScript.__name__, script_class_name):
+        if script.run(CL_StopScript.__name__, script_class_name) == True:
             return script
 
 

@@ -7,7 +7,7 @@ class DemoRecorder(BasicScript):
     pass
 
 
-class UsercmdRecord(BasicScript):
+class Record(BasicScript):
     def __init__(self):
         super().__init__()
         self.csv_writer = None
@@ -23,7 +23,7 @@ class UsercmdRecord(BasicScript):
         self.csv_writer = None
 
 
-class UsercmdReplay(BasicScript):
+class Play(BasicScript):
     def __init__(self):
         super().__init__()
         self.csv_reader = None
