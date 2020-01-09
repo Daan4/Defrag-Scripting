@@ -17,6 +17,16 @@ demo saving broken in frame by frame?
 
 set up asynchronous calculation that runs while paused, and unpauses when done
 
+fix threading not working for pausing every frame to wait on calcs
+seems to be threading issue with embedded python interpreter
+
+look into injx stuff for basic cgaz math
+
+create system to rewind the client+server to previous frame states at any frame recorded in the past or any arbitrary saved frame
+
+another df mod offset: 957848 .25 cgame for pps -> in cgame ?
+
+pitch matters, center on 0 by default unless overridden! probably do this in usercmt_t class when pitch is set!
 
 on botscript allow adding arbitrary python functions to be ran inbetween or something?
 

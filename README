@@ -33,3 +33,5 @@ D:\Libraries\Documents\pycharmprojects\Defrag-Scrivpting\Quake3e-2019-11-29\buil
 
 Notes:
     If there's an error related to "VersionHelpers.h" when compiling Q3E, find and replace each occurrence with "versionhelpers.h" (without capitals)
+
+
